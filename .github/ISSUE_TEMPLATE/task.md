@@ -1,4 +1,3 @@
-
 ---
 name: Task
 about: Công việc kỹ thuật lớn, tách riêng khỏi checklist của Story

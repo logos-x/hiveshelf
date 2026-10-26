@@ -1,4 +1,3 @@
-
 ---
 name: User Story (card Kanban)
 about: Một chức năng nhìn từ người dùng, đủ nhỏ để làm xong trong 1-5 ngày

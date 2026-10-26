@@ -1,4 +1,3 @@
-
 ---
 name: Spike (nghiên cứu)
 about: Thử nghiệm có giới hạn thời gian để trả lời một câu hỏi kỹ thuật

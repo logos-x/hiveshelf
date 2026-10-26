@@ -1,4 +1,3 @@
-
 ---
 name: Epic
 about: Một nhóm chức năng lớn gồm nhiều User Story

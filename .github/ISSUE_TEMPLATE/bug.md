@@ -1,4 +1,3 @@
-
 ---
 name: Bug
 about: Báo lỗi. Lỗi làm hỏng đăng nhập/đọc sách hoặc lỗ hổng bảo mật thì đặt Class = Expedite
