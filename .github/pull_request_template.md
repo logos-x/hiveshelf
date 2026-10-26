@@ -20,4 +20,3 @@ Closes #
 - [ ] Không commit secret, `.env` thật
 - [ ] Đã cập nhật tài liệu/ADR nếu có quyết định mới
 - [ ] Đã tự review lại toàn bộ diff
-EOF

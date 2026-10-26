@@ -27,4 +27,3 @@ labels: type:bug
 - [ ] Chặn luồng chính (đăng nhập, đọc sách, thanh toán) → Class = Expedite
 - [ ] Ảnh hưởng một phần
 - [ ] Nhỏ / giao diện
-EOF

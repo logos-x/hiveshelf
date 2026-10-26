@@ -18,4 +18,3 @@ Part of #<số issue Story>
 
 ## Ghi chú
 -
-EOF

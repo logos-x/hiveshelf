@@ -14,4 +14,3 @@
 
 ## Thông tin Project
 Wave: | Epic: | Size: | Priority: | Class: | Area:
-EOF

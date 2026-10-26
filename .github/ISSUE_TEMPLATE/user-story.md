@@ -43,4 +43,3 @@ Là **[vai trò]**, tôi muốn **[hành động]** để **[giá trị mang l�
 - [ ] Đặt Wave, Priority, Size, Class, Area
 - [ ] Gắn Parent issue = Epic
 - [ ] Gắn Milestone của phase
-EOF

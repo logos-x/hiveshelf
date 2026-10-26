@@ -22,4 +22,3 @@ labels: type:spike
 ## Kết quả đầu ra
 - [ ] Ghi ADR tại docs/adr/
 - [ ] Tạo card cho phần việc phát sinh (nếu có)
-EOF
