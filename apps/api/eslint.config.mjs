@@ -1,2 +1,2 @@
-import base from '@hiveshelf/config/eslint/base';
-export default [...base];
+import nestConfig from '@hiveshelf/config/eslint/nest';
+export default nestConfig;
