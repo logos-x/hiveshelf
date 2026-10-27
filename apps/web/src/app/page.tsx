@@ -1,25 +1,30 @@
 import { Alert } from "@/components/ui/alert";
-import { getPing } from "@/lib/api";
+import { getHealth } from "@/lib/health";
+import type { HealthResponse } from "@hiveshelf/shared";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  let ping: Awaited<ReturnType<typeof getPing>> | null = null;
+  let health: HealthResponse | null = null;
   try {
-    ping = await getPing();
+    health = await getHealth();
   } catch (err) {
-    console.error("[web] Failed to fetch ping", err);
+    console.error("[web] Failed to fetch health", err);
   }
 
   return (
     <main className="mx-auto max-w-xl p-8">
       <h1 className="text-2xl font-semibold">HiveShelf</h1>
-      {ping ? (
-        <p className="mt-4">
-          API: <b>{ping.status}</b> · service: <b>{ping.service}</b>
-        </p>
+      {health ? (
+        <div className="mt-4 space-y-1">
+          <p>
+            Status: <b className="text-green-600">{health.status}</b>
+          </p>
+          <p className="text-sm text-gray-500">Timestamp: {health.timestamp}</p>
+          <p className="text-sm text-gray-500">Version: {health.version}</p>
+        </div>
       ) : (
-        <Alert>Could not connect to API</Alert>
+        <Alert className="mt-4">Could not connect to API</Alert>
       )}
     </main>
   );
