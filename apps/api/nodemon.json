@@ -1,0 +1,6 @@
+{
+  "watch": ["src", "../../packages/shared/dist"],
+  "ext": "ts,js,mjs,json",
+  "ignore": ["src/**/*.spec.ts"],
+  "exec": "nest start"
+}
