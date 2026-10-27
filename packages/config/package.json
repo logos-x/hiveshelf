@@ -6,12 +6,16 @@
   "exports": {
     "./tsconfig.base.json": "./tsconfig.base.json",
     "./eslint/base": "./eslint/base.mjs",
+    "./eslint/nest": "./eslint/nest.mjs",
+    "./eslint/next": "./eslint/next.mjs",
     "./prettier": "./prettier/index.mjs"
   },
   "dependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.3",
     "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
     "prettier": "^3.9.10",
     "typescript-eslint": "^8.72.0"
   },
