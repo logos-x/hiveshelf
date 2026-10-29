@@ -11,8 +11,10 @@
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
       "env": ["API_URL", "PORT", "WEB_ORIGIN"]
     },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
     "lint": {},
-    "typecheck": {},
     "test": {}
   }
 }
