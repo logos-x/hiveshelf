@@ -6,7 +6,7 @@ updates:
       interval: weekly
       day: monday
       timezone: Asia/Ho_Chi_Minh
-    open-pull-request-limit: 5
+    open-pull-requests-limit: 5
     groups:
       minor-and-patch:
         update-types: [minor, patch]
