@@ -1,22 +1,42 @@
 version: 2
+
 updates:
+  # pnpm workspace dependencies
   - package-ecosystem: npm
-    directories: ["/", "/apps/*", "/packages/*"]
+    directories:
+      - "/"
+      - "/apps/*"
+      - "/packages/*"
+
     schedule:
       interval: weekly
       day: monday
       timezone: Asia/Ho_Chi_Minh
+
     open-pull-requests-limit: 5
+
     groups:
       minor-and-patch:
-        update-types: [minor, patch]
+        update-types:
+          - minor
+          - patch
 
+      major-updates:
+        update-types:
+          - major
+
+  # GitHub Actions
   - package-ecosystem: github-actions
     directory: /
+
     schedule:
       interval: weekly
       day: monday
       timezone: Asia/Ho_Chi_Minh
+
+    open-pull-requests-limit: 3
+
     groups:
       actions:
-        update-types: [minor, patch]
+        patterns:
+          - "*"
