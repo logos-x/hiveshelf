@@ -56,7 +56,31 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-### 3. Chạy dự án ở môi trường phát triển (Dev)
+### 3. Khởi động hạ tầng dev (Postgres, MinIO, Mailpit)
+
+Yêu cầu: **Docker** (kèm Compose v2). Không cần cài Postgres hay MinIO lên máy.
+
+```bash
+cp .env.example .env     # chỉ cần làm một lần
+pnpm infra:up
+```
+
+| Dịch vụ             | Địa chỉ                                                     |
+| ------------------- | ----------------------------------------------------------- |
+| Postgres            | `localhost:5432` (DB `hiveshelf`, DB test `hiveshelf_test`) |
+| MinIO API / Console | http://localhost:9000 / http://localhost:9001               |
+| Mailpit UI / SMTP   | http://localhost:8025 / `localhost:1025`                    |
+
+Tài khoản đăng nhập MinIO Console và mật khẩu DB nằm trong `.env`. Chúng chỉ dùng cục bộ, không dùng lại cho staging/prod.
+
+**Khi bị trùng cổng:**
+
+1. Tìm tiến trình đang chiếm cổng: `lsof -i :5432` (macOS/Linux) hoặc `netstat -ano | findstr :5432` (Windows).
+2. Sửa cổng trong `.env` (ví dụ `POSTGRES_PORT=5433`).
+3. Cập nhật cổng tương ứng trong `DATABASE_URL`, `DATABASE_URL_TEST`, `S3_ENDPOINT`.
+4. Chạy lại `pnpm infra:up`.
+
+### 4. Chạy dự án ở môi trường phát triển (Dev)
 
 Chạy đồng thời cả **API** (`http://localhost:3001`) và **Web** (`http://localhost:3000`):
 
@@ -89,6 +113,16 @@ Các lệnh điều phối qua Turborepo từ thư mục gốc:
 | `pnpm typecheck` | Kiểm tra kiểu dữ liệu TypeScript (`tsc --noEmit`) |
 | `pnpm test`      | Chạy unit test (`vitest`)                         |
 | `pnpm format`    | Tự động định dạng code bằng Prettier              |
+|                  |                                                   |
+
+Các lệnh quản lý hạ tầng dev (gọi `docker compose`):
+
+| Lệnh               | Mục đích                                       |
+| ------------------ | ---------------------------------------------- |
+| `pnpm infra:up`    | Khởi động Postgres, MinIO, Mailpit             |
+| `pnpm infra:down`  | Dừng hạ tầng, **giữ** dữ liệu                  |
+| `pnpm infra:logs`  | Xem log các dịch vụ                            |
+| `pnpm infra:reset` | **Xóa toàn bộ dữ liệu dev** và dựng lại từ đầu |
 
 ---
 
