@@ -1,0 +1,103 @@
+name: hiveshelf
+
+services:
+  # PostgreSQL - Main database + Test database
+  postgres:
+    image: postgres:17-alpine
+    container_name: hiveshelf-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hiveshelf}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hiveshelf_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-hiveshelf}
+      POSTGRES_DB_TEST: ${POSTGRES_DB_TEST:-hiveshelf_test}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # SILO - S3-compatible object storage
+  minio:
+    image: docker.io/pgsty/silo:RELEASE.2026-10-26T00-00-00Z
+    container_name: hiveshelf-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-hiveshelf}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-hiveshelf_dev_secret}
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "silo", "healthcheck", "ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Create S3 bucket automatically
+  minio-init:
+    image: docker.io/pgsty/silo:RELEASE.2026-10-26T00-00-00Z
+    container_name: hiveshelf-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-hiveshelf}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-hiveshelf_dev_secret}
+      S3_BUCKET: ${S3_BUCKET:-hiveshelf-dev}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        mcli alias set local http://minio:9000 "$${S3_ACCESS_KEY}" "$${S3_SECRET_KEY}"
+        mcli mb --ignore-existing "local/$${S3_BUCKET}"
+        mcli anonymous set none "local/$${S3_BUCKET}"
+        echo "Bucket $${S3_BUCKET} da san sang (private)"
+
+  # Mailpit - Email testing
+  mailpit:
+    image: axllent/mailpit:v1.27
+    container_name: hiveshelf-mailpit
+    restart: unless-stopped
+    environment:
+      MP_MAX_MESSAGES: 500
+    ports:
+      - "127.0.0.1:${SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Future services: Redis (enable when needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: hiveshelf-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+
+volumes:
+  postgres_data:
+  minio_data:
+  # redis_data:
