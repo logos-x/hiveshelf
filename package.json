@@ -13,7 +13,11 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
+    "infra:reset": "docker compose down -v && docker compose up -d --wait",
+    "infra:logs": "docker compose logs -f"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
