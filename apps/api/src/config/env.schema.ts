@@ -9,6 +9,7 @@ export const envSchema = z.object({
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
   DATABASE_URL: z.url(),
+  WEB_ORIGIN: z.string().default('http://localhost:3000'),
 });
 
 export type Env = z.infer<typeof envSchema>;

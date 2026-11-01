@@ -12,4 +12,9 @@ export class HealthController {
       version: '2.0.2',
     });
   }
+
+  @Get()
+  liveness() {
+    return { status: 'ok' };
+  }
 }
