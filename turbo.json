@@ -9,7 +9,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": ["API_URL", "PORT", "WEB_ORIGIN"]
+      "env": ["NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_SITE_URL", "API_INTERNAL_URL"]
     },
     "typecheck": {
       "dependsOn": ["^build"]
