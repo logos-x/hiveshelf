@@ -1,21 +1,20 @@
 import "server-only";
-import { HealthResponseSchema, Language } from "@hiveshelf/shared";
+import { LivenessResponseSchema, Language } from "@hiveshelf/shared";
+import { serverEnv } from "@/env";
 
 export const defaultLanguage = Language.VI;
 
-function getApiUrl() {
-  const url = process.env.API_URL;
-  if (!url) throw new Error("Missing API_URL environment variable");
-  return url;
-}
+export async function getLiveness() {
+  const url = new URL("/health/live", serverEnv.API_INTERNAL_URL);
 
-export async function getHealth() {
-  const res = await fetch(`${getApiUrl()}/health`, {
+  const response = await fetch(url, {
     cache: "no-store",
     signal: AbortSignal.timeout(3000),
   });
-  if (!res.ok) {
-    throw new Error(`Health check failed: ${res.status} ${res.statusText}`);
+
+  if (!response.ok) {
+    throw new Error(`Liveness check failed: ${response.status}`);
   }
-  return HealthResponseSchema.parse(await res.json());
+
+  return LivenessResponseSchema.parse(await response.json());
 }

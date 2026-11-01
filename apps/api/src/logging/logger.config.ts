@@ -37,7 +37,9 @@ export function buildLoggerParams(opts: {
             target: 'pino-pretty',
             options: { singleLine: true, colorize: true },
           },
-      autoLogging: { ignore: (req) => req.url?.startsWith('/health') ?? false },
+      autoLogging: {
+        ignore: (req) => req.url?.split('?')[0] === '/health/live',
+      },
     },
   };
 }

@@ -90,7 +90,7 @@ pnpm dev
 
 - Sau khi khởi động:
   - Truy cập Web tại: [http://localhost:3000](http://localhost:3000) (trang chủ tự động kết nối và hiển thị trạng thái API ping).
-  - Kiểm tra API tại: [http://localhost:3001/ping](http://localhost:3001/ping) (trả về JSON `{ "status": "ok", "service": "hiveshelf-api" }`).
+  - Kiểm tra API tại: [http://localhost:3001/health/live](http://localhost:3001/health/live) (trả về JSON `{ "status": "ok" }`).
 
 Hoặc có thể chạy riêng từng ứng dụng nếu cần:
 
