@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { HealthController } from './health/health.controller.js';
 import { AppConfigModule } from './config/app-config.module.js';
 import { LoggerModule } from 'nestjs-pino';
@@ -11,7 +11,6 @@ import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
     AppConfigModule,
     LoggerModule.forRootAsync({
       inject: [ConfigService],

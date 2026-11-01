@@ -16,6 +16,7 @@ const CODE_BY_STATUS: Record<number, string> = {
   404: ERROR_CODES.NOT_FOUND,
   409: ERROR_CODES.CONFLICT,
   429: ERROR_CODES.TOO_MANY_REQUESTS,
+  500: ERROR_CODES.INTERNAL_ERROR,
   503: ERROR_CODES.SERVICE_UNAVAILABLE,
 };
 const GENERIC_5XX = 'Internal Server Error';
@@ -66,8 +67,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (e instanceof HttpException) {
       const status = e.getStatus();
+
+      if (status >= 500) {
+        return {
+          statusCode: status,
+          code: CODE_BY_STATUS[status] ?? ERROR_CODES.INTERNAL_ERROR,
+          message: GENERIC_5XX,
+          requestId,
+        };
+      }
+
       const r = e.getResponse();
-      let code = CODE_BY_STATUS[status] ?? 'HTTP_ERROR';
+      let code = CODE_BY_STATUS[status] ?? ERROR_CODES.HTTP_ERROR;
       let message = e.message;
       let details: ApiErrorDetail[] | undefined;
 
@@ -88,7 +99,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
         if (o.details) details = o.details;
       }
 
-      if (status >= 500) message = GENERIC_5XX;
       return {
         statusCode: status,
         code,

@@ -1,15 +1,19 @@
 import { Params } from 'nestjs-pino';
 import { randomUUID } from 'node:crypto';
 
+const SECRET_FIELDS = ['password', 'token', 'accessToken', 'refreshToken'];
+
 export const REDACT_PATHS = [
   'req.headers.authorization',
   'req.headers.cookie',
   'req.headers["x-api-key"]',
-  'req.headers["set-cookie"]',
-  '*.password',
-  '*.token',
-  '*.accessToken',
-  '*.refreshToken',
+  'res.headers["set-cookie"]',
+
+  ...SECRET_FIELDS.flatMap((field) => [
+    field,
+    `*.${field}`,
+    `req.body.${field}`,
+  ]),
 ];
 
 const SAFE_ID = /^[\w-]{8,128}$/;

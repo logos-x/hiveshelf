@@ -15,7 +15,7 @@ function fail(scope: string, err: z.ZodError): never {
   throw new Error(`Invalid ${scope} enviroment variables:\n${lines.join("\n")}`);
 }
 
-const skip = !!process.env.SKIP_ENV_VALIDATION;
+const skip = process.env.SKIP_ENV_VALIDATION === "true";
 
 const clientParsed = clientSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,

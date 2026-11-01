@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { ConfigModule } from '@nestjs/config';
-import { validateEnv } from '../src/config/env.schema';
+import { validateEnv } from '../src/config/env.schema.js';
 
 async function main(): Promise<void> {
   try {

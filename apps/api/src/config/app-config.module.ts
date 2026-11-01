@@ -10,6 +10,7 @@ import { validateEnv } from './env.schema.js';
       cache: true,
       validate: validateEnv,
       envFilePath: ['.env.local', '.env', '../../.env'],
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
     }),
   ],
 })

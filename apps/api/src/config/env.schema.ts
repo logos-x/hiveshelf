@@ -4,11 +4,16 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
-  PORT: z.coerce.number().int().positive().default(4000),
+  PORT: z.coerce.number().int().min(1).max(65535).default(3001),
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
-  DATABASE_URL: z.url(),
+  DATABASE_URL: z
+    .url()
+    .refine(
+      (value) => ['postgres:', 'postgresql:'].includes(new URL(value).protocol),
+      'DATABASE_URL must be use postgres:// or postgresql://',
+    ),
   WEB_ORIGIN: z.string().default('http://localhost:3000'),
 });
 
