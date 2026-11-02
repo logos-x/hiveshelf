@@ -49,6 +49,9 @@ pnpm install             # Cài đặt toàn bộ dependencies trong monorepo
 Sao chép các file môi trường mẫu:
 
 ```bash
+# Cấu hình hạ tầng dùng chung (Postgres, S3/MinIO, SMTP)
+cp .env.example .env
+
 # Cấu hình cho API
 cp apps/api/.env.example apps/api/.env
 
@@ -56,12 +59,17 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
+- Root `.env` chứa cấu hình hạ tầng dùng chung; `apps/api/.env` chứa `NODE_ENV`, `PORT`, `WEB_ORIGIN`, `LOG_LEVEL`, `STORAGE_DRIVER` và `EMAIL_DRIVER`.
+- Với các lệnh API chạy từ `apps/api` (bao gồm `pnpm --filter @hiveshelf/api ...`), thứ tự ưu tiên là: biến môi trường của tiến trình → `apps/api/.env.local` → `apps/api/.env` → root `.env`. Prisma cũng dùng thứ tự này. Root `.env.local` không được API nạp.
+- Web dùng các file môi trường trong `apps/web`, không tự nạp root `.env`. `API_INTERNAL_URL` dành cho server; `NEXT_PUBLIC_API_URL` và `NEXT_PUBLIC_SITE_URL` được đưa vào bundle khi build. Không đặt bí mật trong biến `NEXT_PUBLIC_*`.
+- Kiểm tra cấu hình API: `pnpm --filter @hiveshelf/api env:check`. Lệnh này kiểm tra schema, không kiểm tra kết nối dịch vụ.
+- Khi triển khai, cấp biến môi trường qua nền tảng chạy ứng dụng, đặt `NODE_ENV=production` và dùng thông tin truy cập riêng cho môi trường đó.
+
 ### 3. Khởi động hạ tầng dev (Postgres, MinIO, Mailpit)
 
 Yêu cầu: **Docker** (kèm Compose v2). Không cần cài Postgres hay MinIO lên máy.
 
 ```bash
-cp .env.example .env     # chỉ cần làm một lần
 pnpm infra:up
 ```
 
@@ -77,7 +85,7 @@ Tài khoản đăng nhập MinIO Console và mật khẩu DB nằm trong `.env`.
 
 1. Tìm tiến trình đang chiếm cổng: `lsof -i :5432` (macOS/Linux) hoặc `netstat -ano | findstr :5432` (Windows).
 2. Sửa cổng trong `.env` (ví dụ `POSTGRES_PORT=5433`).
-3. Cập nhật cổng tương ứng trong `DATABASE_URL`, `DATABASE_URL_TEST`, `S3_ENDPOINT`.
+3. Cập nhật cổng tương ứng trong `DATABASE_URL`, `DATABASE_URL_TEST`, `S3_ENDPOINT`. `SMTP_PORT` đồng thời là cổng publish của Mailpit và cổng kết nối SMTP của API. Kiểm tra các file override trong `apps/api` nếu có.
 4. Chạy lại `pnpm infra:up`.
 
 ### 4. Khởi tạo database
