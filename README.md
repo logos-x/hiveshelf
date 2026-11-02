@@ -100,7 +100,8 @@ pnpm dev
 
 - Sau khi khởi động:
   - Truy cập Web tại: [http://localhost:3000](http://localhost:3000) (trang chủ tự động kết nối và hiển thị trạng thái API ping).
-  - Kiểm tra API tại: [http://localhost:3001/health/live](http://localhost:3001/health/live) (trả về JSON `{ "status": "ok" }`).
+  - Kiểm tra API tại: [http://localhost:3001/health/live](http://localhost:3001/health/live)
+    hoặc [http://localhost:3001/health/ready](http://localhost:3001/health/ready) (trả về JSON `{ "status": "ok" }`).
 
 Hoặc có thể chạy riêng từng ứng dụng nếu cần:
 
@@ -151,6 +152,79 @@ Chạy các lệnh sau từ thư mục gốc, sau khi cấu hình biến môi tr
 trên host local; từ chối môi trường production và yêu cầu xác nhận.
 
 Reset dựng lại schema và dữ liệu seed; không phục hồi dữ liệu đã xóa.
+
+### Tạo migration mới
+
+1. Sửa apps/api/prisma/schema.prisma.
+2. Chạy từ root:
+
+   ```bash
+   pnpm db:migrate --name describe_schema_change
+   pnpm db:generate
+   ```
+
+3. Review migration.sql, kiểm tra tác động dữ liệu.
+4. Chạy lint, typecheck, build, unit tests và e2e.
+5. Commit schema cùng migration.
+
+Không sửa migration đã chia sẻ hoặc áp dụng.
+Không dùng db push thay migration trong quy trình dự án.
+
+### Migration SQL tùy chỉnh
+
+```bash
+pnpm db:migrate --name describe_custom_sql --create-only
+```
+
+Sửa và review migration.sql, sau đó áp dụng:
+
+```bash
+pnpm db:migrate
+```
+
+US-4.3 có thể cần unaccent hoặc pg_trgm.
+Khi triển khai tính năng đó, tạo extension và index bằng migration SQL;
+task hiện tại chưa cài extension.
+
+### Quy ước review schema
+
+- Model PascalCase, field camelCase; bảng/cột snake_case.
+- Dùng @map/@@map khi cần.
+- PK UUID v4 sinh tại DB; FK phải có kiểu tương thích.
+- Timestamp dùng timestamptz(3).
+- @updatedAt hoạt động qua Prisma, không phải DB trigger.
+- Unique/index và hành vi xóa quan hệ phải có lý do rõ ràng.
+- Soft delete được quyết định theo từng model.
+- Migration phải dựng được schema trên DB trống.
+
+### Kiểm tra database và API
+
+- /health/live: liveness, không truy vấn DB.
+- /health/ready: readiness, SELECT 1 qua Prisma.
+- /health: alias readiness.
+- Readiness lỗi trả HTTP 503 theo error envelope của API.
+- API cần kết nối DB thành công lúc startup.
+- SELECT 1 không xác nhận schema đã được migrate đầy đủ.
+
+### Chạy automated tests
+
+DB hiveshelf_test phải tồn tại và DATABASE_URL_TEST phải khác DB dev.
+
+```bash
+pnpm --filter @hiveshelf/api test
+pnpm --filter @hiveshelf/api test:e2e
+```
+
+Global setup kiểm tra URL test, áp dụng migration và seed hai lần trước e2e.
+Không chạy đồng thời nhiều suite cùng ghi dữ liệu trên một DB test.
+
+Biến môi trường của tiến trình có ưu tiên cao nhất, sau đó:
+apps/api/.env.local → apps/api/.env → root .env.
+
+Script Docker tạo DB test chỉ tự chạy khi data directory được khởi tạo lần đầu.
+Nếu volume cũ thiếu DB test, tạo bổ sung DB; không cần reset volume.
+
+Chi tiết kiến trúc: docs/adr/005-prisma-migration-workflow.md.
 
 ---
 

@@ -246,6 +246,23 @@ Các kiểm tra cần hoàn thành:
 - Kiểm tra automated tests sử dụng đúng database test.
 - Kiểm tra migration workflow.
 
+### Validation bổ sung — US-0.4a
+
+Các kiểm tra được thực hiện trong PR #45:
+
+- Kết nối thành công tới DB development và DB test.
+- Migration được áp dụng bằng migrate dev trên DB trống.
+- Migration đã commit được áp dụng bằng migrate deploy trên DB trống.
+- Seed chạy lặp không tạo bản ghi bootstrap trùng.
+- Reset DB test áp dụng lại migration và seed.
+- Guard chặn reset không an toàn và test trỏ nhầm DB.
+- NestJS kết nối và đóng kết nối qua PrismaService.
+- DB outage: liveness giữ 200, readiness chuyển 503 và hồi phục 200.
+- Unit tests, e2e và CI thành công.
+
+Quyết định về ORM, migration và quy ước schema được mô tả trong
+[ADR-005](005-prisma-migration-workflow.md).
+
 ## 7. Future Considerations
 
 Trong tương lai, HiveShelf cần xem xét:
