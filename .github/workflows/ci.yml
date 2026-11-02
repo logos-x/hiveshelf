@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
 
+env:
+  DATABASE_URL: postgresql://test:test@localhost:5432/hiveshelf_test
+  PORT: "3001"
+  NEXT_PUBLIC_API_URL: http://localhost:3001
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  API_INTERNAL_URL: http://localhost:3001
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -36,4 +43,20 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
 
-      - run: pnpm turbo run lint typecheck build --cache-dir=.turbo
+      - name: Check environment configuration
+        run: pnpm --filter @hiveshelf/api env:check
+        env:
+          NODE_ENV: test
+
+      - name: Run checks
+        run: pnpm turbo run lint typecheck build --cache-dir=.turbo
+
+      - name: Run API unit tests
+        run: pnpm --filter @hiveshelf/api test
+        env:
+          NODE_ENV: test
+
+      - name: Run API E2E tests
+        run: pnpm --filter @hiveshelf/api test:e2e
+        env:
+          NODE_ENV: test

@@ -21,10 +21,10 @@ Monorepo được quản lý bằng [pnpm workspaces](https://pnpm.io/workspaces
 
 ### Thông tin các ứng dụng
 
-| Ứng dụng       | Công nghệ             | Cổng mặc định | Biến môi trường                                   | Mục đích                                                                           |
-| -------------- | --------------------- | ------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **`apps/api`** | NestJS 12, Node.js    | `3001`        | `PORT=3001`<br>`WEB_ORIGIN=http://localhost:3000` | REST API, xử lý nghiệp vụ, xác thực, cơ sở dữ liệu. Endpoint kiểm tra: `GET /ping` |
-| **`apps/web`** | Next.js 16 (React 19) | `3000`        | `API_URL=http://localhost:3001`                   | Giao diện người dùng web, Server-Side Rendering & Server Components                |
+| Ứng dụng       | Công nghệ             | Cổng mặc định | Biến môi trường                                                                         | Mục đích                                                                           |
+| -------------- | --------------------- | ------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **`apps/api`** | NestJS 12, Node.js    | `3001`        | `PORT=3001`<br>`WEB_ORIGIN=http://localhost:3000`                                       | REST API, xử lý nghiệp vụ, xác thực, cơ sở dữ liệu. Endpoint kiểm tra: `GET /ping` |
+| **`apps/web`** | Next.js 16 (React 19) | `3000`        | `API_INTERNAL_URL=http://localhost:3001`<br>`NEXT_PUBLIC_API_URL=http://localhost:3001` | Giao diện người dùng web, Server-Side Rendering & Server Components                |
 
 ---
 
@@ -90,7 +90,7 @@ pnpm dev
 
 - Sau khi khởi động:
   - Truy cập Web tại: [http://localhost:3000](http://localhost:3000) (trang chủ tự động kết nối và hiển thị trạng thái API ping).
-  - Kiểm tra API tại: [http://localhost:3001/ping](http://localhost:3001/ping) (trả về JSON `{ "status": "ok", "service": "hiveshelf-api" }`).
+  - Kiểm tra API tại: [http://localhost:3001/health/live](http://localhost:3001/health/live) (trả về JSON `{ "status": "ok" }`).
 
 Hoặc có thể chạy riêng từng ứng dụng nếu cần:
 
