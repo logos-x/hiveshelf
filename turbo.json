@@ -15,6 +15,24 @@
       "dependsOn": ["^build"]
     },
     "lint": {},
-    "test": {}
+    "test": {},
+    "@hiveshelf/api#db:generate": {
+      "cache": false
+    },
+    "@hiveshelf/api#build": {
+      "dependsOn": ["^build", "db:generate"],
+      "outputs": ["dist/**"]
+    },
+    "@hiveshelf/api#typecheck": {
+      "dependsOn": ["^build", "db:generate"]
+    },
+    "@hiveshelf/api#dev": {
+      "dependsOn": ["^build", "db:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "@hiveshelf/api#test": {
+      "dependsOn": ["^build", "db:generate"]
+    }
   }
 }

@@ -10,7 +10,8 @@
     "outDir": "./dist",
     "incremental": true,
     "strictPropertyInitialization": false,
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "node"],
+    "rewriteRelativeImportExtensions": true
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": ["src", "test", "vitest.config.ts", "prisma.config.ts"]
 }

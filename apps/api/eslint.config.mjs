@@ -1,2 +1,7 @@
 import nestConfig from '@hiveshelf/config/eslint/nest';
-export default nestConfig;
+export default [
+  ...nestConfig,
+  {
+    ignores: ['src/generated/prisma/**'],
+  },
+];
