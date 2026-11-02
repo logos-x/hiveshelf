@@ -8,10 +8,12 @@ import { Env } from './config/env.schema.js';
 import { buildLoggerParams } from './logging/logger.config.js';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
+import { PrismaModule } from './prisma/prisma.module.ts';
 
 @Module({
   imports: [
     AppConfigModule,
+    PrismaModule,
     LoggerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) =>

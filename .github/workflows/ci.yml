@@ -5,7 +5,8 @@ on:
     branches: [main]
 
 env:
-  DATABASE_URL: postgresql://test:test@localhost:5432/hiveshelf_test
+  DATABASE_URL: postgresql://hiveshelf:hiveshelf_ci@localhost:5432/hiveshelf
+  DATABASE_URL_TEST: postgresql://hiveshelf:hiveshelf_ci@localhost:5432/hiveshelf_test
   PORT: "3001"
   NEXT_PUBLIC_API_URL: http://localhost:3001
   NEXT_PUBLIC_SITE_URL: http://localhost:3000
@@ -60,3 +61,17 @@ jobs:
         run: pnpm --filter @hiveshelf/api test:e2e
         env:
           NODE_ENV: test
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: hiveshelf
+          POSTGRES_PASSWORD: hiveshelf_ci
+          POSTGRES_DB: hiveshelf_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U hiveshelf -d hiveshelf_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
