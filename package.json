@@ -21,7 +21,10 @@
     "db:generate": "pnpm --filter @hiveshelf/api db:generate",
     "db:migrate": "pnpm --filter @hiveshelf/api  db:migrate",
     "db:deploy": "pnpm --filter @hiveshelf/api db:deploy",
-    "db:status": "pnpm --filter @hiveshelf/api db:status"
+    "db:status": "pnpm --filter @hiveshelf/api db:status",
+    "db:seed": "pnpm --filter @hiveshelf/api db:seed",
+    "db:reset": "pnpm --filter @hiveshelf/api db:reset",
+    "db:studio": "pnpm --filter @hiveshelf/api db:studio"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

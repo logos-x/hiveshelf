@@ -80,7 +80,17 @@ Tài khoản đăng nhập MinIO Console và mật khẩu DB nằm trong `.env`.
 3. Cập nhật cổng tương ứng trong `DATABASE_URL`, `DATABASE_URL_TEST`, `S3_ENDPOINT`.
 4. Chạy lại `pnpm infra:up`.
 
-### 4. Chạy dự án ở môi trường phát triển (Dev)
+### 4. Khởi tạo database
+
+Sau khi Postgres đã khởi động, chạy từ thư mục gốc để sinh Prisma Client, áp dụng các migration đã commit và seed dữ liệu khung:
+
+```bash
+pnpm db:generate
+pnpm db:deploy
+pnpm db:seed
+```
+
+### 5. Chạy dự án ở môi trường phát triển (Dev)
 
 Chạy đồng thời cả **API** (`http://localhost:3001`) và **Web** (`http://localhost:3000`):
 
@@ -123,6 +133,24 @@ Các lệnh quản lý hạ tầng dev (gọi `docker compose`):
 | `pnpm infra:down`  | Dừng hạ tầng, **giữ** dữ liệu                  |
 | `pnpm infra:logs`  | Xem log các dịch vụ                            |
 | `pnpm infra:reset` | **Xóa toàn bộ dữ liệu dev** và dựng lại từ đầu |
+
+### Database workflow
+
+Chạy các lệnh sau từ thư mục gốc, sau khi cấu hình biến môi trường và khởi động Postgres.
+
+- `pnpm db:generate`: sinh Prisma Client từ schema.
+- `pnpm db:migrate --name <name>`: tạo và áp dụng migration local.
+- `pnpm db:deploy`: áp dụng migration đã commit.
+- `pnpm db:seed`: seed dữ liệu khung, có thể chạy nhiều lần.
+- `pnpm db:status`: kiểm tra trạng thái migration.
+- `pnpm db:studio`: mở Prisma Studio.
+- `pnpm db:reset`: xóa dữ liệu schema public của DB local được cho phép,
+  áp dụng lại migration và chạy seed.
+
+`db:reset` chỉ cho phép database `hiveshelf` hoặc `hiveshelf_test`
+trên host local; từ chối môi trường production và yêu cầu xác nhận.
+
+Reset dựng lại schema và dữ liệu seed; không phục hồi dữ liệu đã xóa.
 
 ---
 
