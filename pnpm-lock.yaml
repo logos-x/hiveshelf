@@ -48,6 +48,9 @@ importers:
       "@aws-sdk/client-s3":
         specifier: ^3.1161.0
         version: 3.1161.0
+      "@aws-sdk/lib-storage":
+        specifier: ^3.1161.0
+        version: 3.1161.0(@aws-sdk/client-s3@3.1161.0)
       "@aws-sdk/s3-request-presigner":
         specifier: ^3.1161.0
         version: 3.1161.0
@@ -416,6 +419,15 @@ packages:
         integrity: sha512-zKTyLJBEyfQBVlYqT6Jt+mYV4r8kGbWM7dn6v4Y4MRARizhYafjDXP/iMu76UMRhToSPNmIKX1XAb24gtpBFIA==,
       }
     engines: { node: ">=20.0.0" }
+
+  "@aws-sdk/lib-storage@3.1161.0":
+    resolution:
+      {
+        integrity: sha512-ROSytGylVRtkUsp64mpzryv1Puvgo6jAm4RWTW2m3kC4SSsjrvhqZa5uPKfz116a0U1kk/hBz9S1eBItkyd++w==,
+      }
+    engines: { node: ">=20.0.0" }
+    peerDependencies:
+      "@aws-sdk/client-s3": ^3.1161.0
 
   "@aws-sdk/middleware-sdk-s3@3.972.85":
     resolution:
@@ -4234,6 +4246,12 @@ packages:
         integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==,
       }
 
+  buffer@5.6.0:
+    resolution:
+      {
+        integrity: sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw==,
+      }
+
   buffer@5.7.1:
     resolution:
       {
@@ -5458,6 +5476,13 @@ packages:
         integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==,
       }
     engines: { node: ">= 0.6" }
+
+  events@3.3.0:
+    resolution:
+      {
+        integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==,
+      }
+    engines: { node: ">=0.8.x" }
 
   eventsource-parser@3.1.1:
     resolution:
@@ -8680,6 +8705,12 @@ packages:
       }
     engines: { node: ">= 0.4" }
 
+  stream-browserify@3.0.0:
+    resolution:
+      {
+        integrity: sha512-H73RAHsVBapbim0tU2JwwOiXUj+fikfiaoYAKHF3VJfA0pe2BCzkhAHBlLG6REzE+2WNZcxOXjK7lkso+9euLA==,
+      }
+
   streamsearch@1.1.0:
     resolution:
       {
@@ -9761,6 +9792,16 @@ snapshots:
       "@aws-sdk/types": 3.975.0
       "@smithy/core": 3.38.1
       "@smithy/types": 4.19.0
+      tslib: 2.8.1
+
+  "@aws-sdk/lib-storage@3.1161.0(@aws-sdk/client-s3@3.1161.0)":
+    dependencies:
+      "@aws-sdk/client-s3": 3.1161.0
+      "@smithy/core": 3.38.1
+      "@smithy/types": 4.19.0
+      buffer: 5.6.0
+      events: 3.3.0
+      stream-browserify: 3.0.0
       tslib: 2.8.1
 
   "@aws-sdk/middleware-sdk-s3@3.972.85":
@@ -12062,6 +12103,11 @@ snapshots:
 
   buffer-from@1.1.2: {}
 
+  buffer@5.6.0:
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
+
   buffer@5.7.1:
     dependencies:
       base64-js: 1.5.1
@@ -12930,6 +12976,8 @@ snapshots:
   esutils@2.0.3: {}
 
   etag@1.8.1: {}
+
+  events@3.3.0: {}
 
   eventsource-parser@3.1.1: {}
 
@@ -14975,6 +15023,11 @@ snapshots:
     dependencies:
       es-errors: 1.3.0
       internal-slot: 1.1.0
+
+  stream-browserify@3.0.0:
+    dependencies:
+      inherits: 2.0.4
+      readable-stream: 3.6.2
 
   streamsearch@1.1.0: {}
 

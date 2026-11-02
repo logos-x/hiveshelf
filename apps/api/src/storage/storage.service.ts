@@ -25,8 +25,8 @@ export interface StorageService {
 }
 
 export class StorageObjectNotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(public readonly key: string) {
+    super(`Storage object not found: ${key}`);
     this.name = 'StorageObjectNotFoundError';
   }
 }

@@ -9,10 +9,12 @@ import { buildLoggerParams } from './logging/logger.config.js';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
 import { PrismaModule } from './prisma/prisma.module.ts';
+import { StorageModule } from './storage/storage.module.ts';
 
 @Module({
   imports: [
     AppConfigModule,
+    StorageModule,
     PrismaModule,
     LoggerModule.forRootAsync({
       inject: [ConfigService],
