@@ -20,6 +20,7 @@
     "prisma.config.ts",
     "scripts",
     "prisma/seed.ts",
-    "vitest.config.e2e.ts"
+    "vitest.config.e2e.ts",
+    "vitest.config.int.ts"
   ]
 }

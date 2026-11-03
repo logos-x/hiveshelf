@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon",
+    "dev:smoke": "tsx scripts/dev-smoke.ts",
     "build": "nest build",
     "deploy": "nest deploy",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -21,6 +22,7 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
+    "test:int": "vitest run --config ./vitest.config.int.ts",
     "env:check": "tsx scripts/check-env.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -32,6 +34,9 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
+    "@aws-sdk/lib-storage": "^3.1161.0",
+    "@aws-sdk/s3-request-presigner": "^3.1161.0",
     "@hiveshelf/shared": "workspace:*",
     "@nestjs/common": "^12.0.1",
     "@nestjs/config": "^12.0.1",
@@ -40,7 +45,9 @@
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "dotenv": "18.0.9",
+    "handlebars": "^4.7.10",
     "nestjs-pino": "^5.3.1",
+    "nodemailer": "^10.3.1",
     "pg": "8.23.1",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
@@ -56,6 +63,7 @@
     "@nestjs/testing": "^12.0.1",
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
+    "@types/nodemailer": "^8.0.2",
     "@types/pg": "8.23.1",
     "@types/supertest": "^7.0.0",
     "@vitest/coverage-v8": "^4.1.2",
