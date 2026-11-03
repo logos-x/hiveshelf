@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon",
+    "dev:smoke": "tsx scripts/dev-smoke.ts",
     "build": "nest build",
     "deploy": "nest deploy",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

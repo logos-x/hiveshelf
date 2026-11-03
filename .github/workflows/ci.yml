@@ -62,8 +62,10 @@ jobs:
           docker compose up -d --wait minio mailpit
           docker compose run --rm minio-init
 
-      - name: Run API integration tests
-        run: pnpm --filter @hiveshelf/api test:int
+      - name: Run API integration tests and smoke
+        run: |
+          pnpm --filter @hiveshelf/api test:int
+          pnpm dev:smoke
         env:
           NODE_ENV: test
           STORAGE_DRIVER: s3
@@ -83,6 +85,13 @@ jobs:
         run: pnpm --filter @hiveshelf/api test:e2e
         env:
           NODE_ENV: test
+
+      - name: Smoke with memory drivers
+        run: pnpm dev:smoke
+        env:
+          NODE_ENV: test
+          STORAGE_DRIVER: memory
+          EMAIL_DRIVER: memory
     services:
       postgres:
         image: postgres:17-alpine

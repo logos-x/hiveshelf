@@ -214,7 +214,109 @@ task hiện tại chưa cài extension.
 - API cần kết nối DB thành công lúc startup.
 - SELECT 1 không xác nhận schema đã được migrate đầy đủ.
 
-### Chạy automated tests
+## Storage và email
+
+API đã đăng ký `StorageModule` và `EmailModule` trong `AppModule`. Các module export token `STORAGE_SERVICE` và `EMAIL_SERVICE` để inject vào service nghiệp vụ; driver được chọn bằng biến môi trường.
+
+### Cấu hình local
+
+Trong `apps/api/.env`:
+
+```dotenv
+STORAGE_DRIVER=s3
+EMAIL_DRIVER=smtp
+```
+
+Các thông số kết nối nằm ở root `.env` (giá trị mẫu chỉ dành cho local):
+
+```dotenv
+S3_ENDPOINT=http://localhost:9000
+S3_REGION=us-east-1
+S3_BUCKET=hiveshelf-dev
+S3_ACCESS_KEY=hiveshelf
+S3_SECRET_KEY=hiveshelf_dev_secret
+S3_FORCE_PATH_STYLE=true
+
+SMTP_HOST=localhost
+SMTP_PORT=1025
+MAIL_FROM="HiveShelf <no-reply@hiveshelf.local>"
+MAILPIT_UI_PORT=8025
+```
+
+Khởi động riêng các dịch vụ cần cho storage/email từ root:
+
+```bash
+docker compose up -d --wait minio minio-init mailpit
+pnpm --filter @hiveshelf/api env:check
+```
+
+`minio-init` tạo bucket theo `S3_BUCKET` và đặt bucket ở chế độ private. Mở [MinIO Console](http://localhost:9001) để xem object và [Mailpit](http://localhost:8025) để xem email nhận qua SMTP local. Các địa chỉ này dùng cổng mặc định; điều chỉnh nếu đã đổi `.env`.
+
+| Driver                  | Hành vi                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STORAGE_DRIVER=memory` | Lưu object trong RAM; mất khi tiến trình kết thúc. Signed URL có dạng `memory:///...`, chỉ dùng cho test, không truy cập qua HTTP.                                        |
+| `STORAGE_DRIVER=s3`     | Dùng S3-compatible storage; yêu cầu `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`. `S3_ENDPOINT` dành cho endpoint tùy chỉnh như MinIO; `S3_REGION` mặc định `us-east-1`. |
+| `EMAIL_DRIVER=memory`   | Render email vào `InMemoryEmailService.outbox`; không gửi qua SMTP. Có thể gọi `clear()` để xóa outbox trong test.                                                        |
+| `EMAIL_DRIVER=smtp`     | Gửi email qua SMTP; yêu cầu `SMTP_HOST`, `MAIL_FROM`; `SMTP_PORT` mặc định `1025`.                                                                                        |
+
+Schema mặc định cả hai driver là `memory` nếu không khai báo. File mẫu local chọn `s3` và `smtp` để dùng hạ tầng Docker. SMTP adapter hiện cấu hình `secure: false`, chưa có tùy chọn tài khoản/mật khẩu hay cấu hình TLS riêng qua env; cấu hình này phục vụ Mailpit local.
+
+### Sử dụng trong API
+
+Ví dụ service trong `apps/api/src`:
+
+```ts
+import { Inject, Injectable } from "@nestjs/common";
+import { STORAGE_SERVICE, type StorageService } from "./storage/storage.service.ts";
+import { EMAIL_SERVICE, type EmailService } from "./email/email.service.ts";
+
+@Injectable()
+export class ExampleService {
+  constructor(
+    @Inject(STORAGE_SERVICE) private readonly storage: StorageService,
+    @Inject(EMAIL_SERVICE) private readonly email: EmailService,
+  ) {}
+
+  async run() {
+    const key = "examples/hello.txt";
+    await this.storage.put(key, Buffer.from("Hello HiveShelf"), "text/plain");
+    const downloadUrl = await this.storage.getSignedUrl(key, 60);
+
+    await this.email.send({
+      template: "welcome",
+      to: "reader@example.com",
+      data: { name: "Reader", appUrl: "http://localhost:3000" },
+    });
+
+    return { downloadUrl };
+  }
+}
+```
+
+Storage hỗ trợ `put` với `Buffer` hoặc Node.js `Readable`, `get` trả về stream cùng metadata, `exists`, `delete` và signed URL tải xuống. `get` ném `StorageObjectNotFoundError` khi object không tồn tại; xóa object không tồn tại vẫn thành công. TTL của signed URL là số nguyên từ `1` đến `604800` giây; range read chưa được hỗ trợ. Endpoint S3 dùng để ký URL phải truy cập được từ nơi tải file. Xem [quy ước storage key](docs/storage-keys.md) khi đặt key cho dữ liệu nghiệp vụ.
+
+Email hiện có template `welcome`, nhận `name` và `appUrl`; `to` nhận một địa chỉ hoặc mảng địa chỉ. Mỗi template có ba file trong `apps/api/src/email/templates/<name>/`: `subject.hbs`, `html.hbs`, `text.hbs`. Renderer dùng Handlebars strict mode, escape dữ liệu trong HTML và giữ nguyên dữ liệu trong subject/plain text. Khi thêm template, cập nhật `TemplateDataMap` trong `email.service.ts` và tạo đủ ba file. Nest CLI đã cấu hình copy các file `.hbs` khi build.
+
+### Kiểm tra storage và email
+
+Chạy từ root:
+
+```bash
+# Unit test: memory adapters, render template và các unit test API khác
+pnpm --filter @hiveshelf/api test
+
+# Integration test: cần S3, bucket và Mailpit đang chạy; driver phải là s3/smtp
+pnpm --filter @hiveshelf/api test:int
+
+# Smoke test theo driver đang cấu hình
+pnpm --filter @hiveshelf/api dev:smoke
+```
+
+Integration test kiểm tra vòng đời object, signed URL và email nhận tại Mailpit (subject, người nhận, HTML, text), đồng thời dọn dữ liệu do test tạo. Test hết hạn signed URL chủ động chờ khoảng 6 giây. Nếu gặp `ECONNREFUSED` ở cổng `9000`, `1025` hoặc `8025`, kiểm tra `docker compose ps -a`, khởi động dịch vụ và đối chiếu endpoint/cổng trong env.
+
+Smoke test upload, đọc, ký URL rồi xóa object; gửi một email và giữ email SMTP lại để xem trong Mailpit. Với driver memory, script kiểm tra URL giả lập và outbox. Script từ chối chạy khi `NODE_ENV=production`.
+
+## Chạy automated tests cho database và API
 
 DB hiveshelf_test phải tồn tại và DATABASE_URL_TEST phải khác DB dev.
 
