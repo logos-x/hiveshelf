@@ -61,13 +61,14 @@ Mô hình nghiệp vụ được triển khai trong US-3.1a.
 ### Automated tests và CI
 
 - DATABASE_URL_TEST bắt buộc và phải khác database development.
-- Hiện chỉ cho phép DB hiveshelf_test trên loopback và schema public.
-- Global setup chạy migrate deploy và seed trước e2e.
-- URL đã kiểm tra được truyền tới worker bằng provide/inject.
+- URL nền chỉ cho phép DB hiveshelf_test trên loopback và schema public.
+- Global setup tạo DB hiveshelf_test_<uuid> riêng cho mỗi lần chạy.
+- Migration và seed chạy trên DB tạm trước e2e.
+- URL DB tạm được truyền tới worker bằng provide/inject.
+- Teardown xóa DB tạm; setup lỗi cũng thực hiện cleanup.
+- Role test cần quyền tạo database.
 - GitHub Actions dùng PostgreSQL 17 service riêng.
-- Unit test không yêu cầu DB; e2e sử dụng DB thật.
-- Generate chạy khi cài dependencies và trước các task Turbo cần client.
-- Build và postinstall không chạy migration hoặc seed.
+- Job test chạy pnpm test sau job CI.
 
 ## Alternatives Considered
 

@@ -124,15 +124,15 @@ pnpm --filter @hiveshelf/web dev   # Chỉ chạy Web (cổng 3000)
 
 Các lệnh điều phối qua Turborepo từ thư mục gốc:
 
-| Lệnh             | Mục đích                                          |
-| ---------------- | ------------------------------------------------- |
-| `pnpm dev`       | Chạy dev server cho tất cả các app song song      |
-| `pnpm build`     | Build production cho toàn bộ ứng dụng và packages |
-| `pnpm lint`      | Kiểm tra lỗi code với ESLint toàn monorepo        |
-| `pnpm typecheck` | Kiểm tra kiểu dữ liệu TypeScript (`tsc --noEmit`) |
-| `pnpm test`      | Chạy unit test (`vitest`)                         |
-| `pnpm format`    | Tự động định dạng code bằng Prettier              |
-|                  |                                                   |
+| Lệnh             | Mục đích                                                 |
+| ---------------- | -------------------------------------------------------- |
+| `pnpm dev`       | Chạy dev server cho tất cả các app song song             |
+| `pnpm build`     | Build production cho toàn bộ ứng dụng và packages        |
+| `pnpm lint`      | Kiểm tra lỗi code với ESLint toàn monorepo               |
+| `pnpm typecheck` | Kiểm tra kiểu dữ liệu TypeScript (`tsc --noEmit`)        |
+| `pnpm test`      | Chạy test shared, web và API, gồm API e2e với PostgreSQL |
+| `pnpm format`    | Tự động định dạng code bằng Prettier                     |
+|                  |                                                          |
 
 Các lệnh quản lý hạ tầng dev (gọi `docker compose`):
 
@@ -303,7 +303,7 @@ Chạy từ root:
 
 ```bash
 # Unit test: memory adapters, render template và các unit test API khác
-pnpm --filter @hiveshelf/api test
+pnpm --filter @hiveshelf/api test:unit
 
 # Integration test: cần S3, bucket và Mailpit đang chạy; driver phải là s3/smtp
 pnpm --filter @hiveshelf/api test:int
@@ -316,25 +316,20 @@ Integration test kiểm tra vòng đời object, signed URL và email nhận t�
 
 Smoke test upload, đọc, ký URL rồi xóa object; gửi một email và giữ email SMTP lại để xem trong Mailpit. Với driver memory, script kiểm tra URL giả lập và outbox. Script từ chối chạy khi `NODE_ENV=production`.
 
-## Chạy automated tests cho database và API
+## Chạy automated tests
 
-DB hiveshelf_test phải tồn tại và DATABASE_URL_TEST phải khác DB dev.
+Khởi động PostgreSQL rồi chạy test từ root:
 
 ```bash
-pnpm --filter @hiveshelf/api test
-pnpm --filter @hiveshelf/api test:e2e
+docker compose up -d --wait postgres
+pnpm test
 ```
 
-Global setup kiểm tra URL test, áp dụng migration và seed hai lần trước e2e.
-Không chạy đồng thời nhiều suite cùng ghi dữ liệu trên một DB test.
+Lệnh chạy test của shared, web và API, bao gồm API e2e với DB thật.
+Mỗi lần chạy e2e tạo database riêng, migrate/seed và tự dọn sau test.
 
-Biến môi trường của tiến trình có ưu tiên cao nhất, sau đó:
-apps/api/.env.local → apps/api/.env → root .env.
-
-Script Docker tạo DB test chỉ tự chạy khi data directory được khởi tạo lần đầu.
-Nếu volume cũ thiếu DB test, tạo bổ sung DB; không cần reset volume.
-
-Chi tiết kiến trúc: docs/adr/005-prisma-migration-workflow.md.
+Hướng dẫn cấu hình DB, lệnh chạy từng suite, vị trí và quy ước viết test:
+[docs/TESTING.md](docs/TESTING.md).
 
 ---
 
