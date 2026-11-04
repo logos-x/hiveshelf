@@ -10,7 +10,7 @@ describe("LivenessResponseSchema", () => {
     expect(result.success).toBe(true);
 
     if (result.success) {
-      expect(result.data).toEqual({ status: "ok" });
+      expect(result.data).toEqual({ status: "strong" });
     }
   });
 
