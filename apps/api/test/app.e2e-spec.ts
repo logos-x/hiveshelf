@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from './../src/app.module.js';
-import { afterAll, beforeAll, expect } from 'vitest';
+import { afterAll, beforeAll, expect, inject } from 'vitest';
 import { LivenessResponseSchema } from '@hiveshelf/shared';
 import { afterEach, vi } from 'vitest';
 import { ERROR_CODES } from '@hiveshelf/shared';
@@ -68,6 +68,22 @@ describe('API liveness (e2e)', () => {
 
   afterEach(() => {
     vi.resetAllMocks();
+  });
+
+  it('connects to the isolated database for this run', async () => {
+    const prisma = app!.get(PrismaService);
+
+    const [result] = await prisma.$queryRaw<
+      { database: string }[]
+    >`SELECT current_database() AS database`;
+
+    const expectedDatabase = new URL(inject('testDatabaseUrl')).pathname.slice(
+      1,
+    );
+
+    expect(expectedDatabase).toMatch(/^hiveshelf_test_[a-f0-9]{32}$/);
+
+    expect(result?.database).toBe(expectedDatabase);
   });
 
   it('GET /health/ready returns 200 with a real database', async () => {
