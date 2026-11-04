@@ -1,48 +1,54 @@
 # ADR-003: Cách đóng gói @hiveshelf/shared
 
-- Trạng thái: Accepted
-- Ngày: 27/10/2026
+- **Trạng thái:** Accepted
+- **Ngày:** 2026-10-27
+- **Cập nhật:** 2026-11-04 — làm rõ runtime ESM và quy trình build/watch.
 
 ## Bối cảnh
 
-Monorepo bao gồm:
-
-- `apps/api`: NestJS (chạy Node.js ESM/CommonJS hybrid với `moduleResolution: nodenext`).
-- `apps/web`: Next.js (chạy ESM với Turbopack/Webpack và `moduleResolution: bundler`).
-
-Cần một package `@hiveshelf/shared` dùng chung types, enums, và Zod schemas cho cả hai ứng dụng, đảm bảo hoạt động trơn tru trong cả môi trường development lẫn production.
+API NestJS hiện chạy Node.js ESM (`type: module`, `moduleResolution: nodenext`);
+web Next.js dùng bundler. Cả hai cần types, enum, hằng số và Zod schema dùng chung
+trong development và production mà không phải tự biên dịch source của package.
 
 ## Quyết định
 
-Build `@hiveshelf/shared` bằng `tsup` ra **Dual Package: CJS + ESM + TypeScript Declaration Files (.d.ts)**.
-Cấu hình trong `package.json` của shared:
+Build `@hiveshelf/shared` bằng **tsup**, xuất CJS, ESM và TypeScript declarations.
+Conditional exports tại entry gốc dùng `import: ./dist/index.mjs`,
+`require: ./dist/index.js`, `types: ./dist/index.d.ts`; giữ `main`, `module`,
+`types` cho tooling cũ. CJS là đầu ra tương thích bổ sung, không phải runtime
+chính của API hiện tại. Khai báo `sideEffects: false`; code phải giữ tính chất này.
 
-- Hỗ trợ trường `exports` hiện đại:
-  - `import`: `./dist/index.mjs` (cho Next.js và Node ESM)
-  - `require`: `./dist/index.js` (cho CommonJS fallback)
-  - `types`: `./dist/index.d.ts`
-- Cung cấp top-level `main`, `module`, `types` để tương thích ngược với các công cụ không đọc `exports`.
+Shared chỉ chứa contract và logic thuần, không phụ thuộc NestJS, React, Next.js,
+DOM hoặc Prisma. Các consumer dùng API export công khai, không import sâu vào
+source/dist. Giữ Zod cùng major trong workspace, kiểm tra lockfile khi nâng cấp.
 
-## Lý do
+## Hệ quả
 
-- **Độ tin cậy cao**: Tránh hoàn toàn các lỗi `ERR_REQUIRE_ESM` hoặc `ERR_REQUIRE_CYCLE_MODULE` khi các công cụ của NestJS hoặc thư viện phụ thuộc nạp module.
-- **Tối ưu tốc độ build**: Không bắt compiler của Next.js hay NestJS phải transpile lại source TypeScript thô của shared package.
-- **Môi trường dev và production đồng nhất**: Code chạy ở dev là code đã được build giống hệt như khi đóng gói release/deploy.
+- **Tốt:** Consumer đọc JavaScript đã build và declarations; tách bước biên dịch
+  shared khỏi compiler ứng dụng, hỗ trợ cả ESM và công cụ cần CJS.
+- **Đánh đổi:** Phải build shared trước consumer và giữ hai đầu ra tương thích;
+  dual build không bảo đảm loại bỏ mọi lỗi module hoặc vấn đề runtime identity.
+  Tránh thêm trạng thái singleton phụ thuộc việc hai đầu ra là cùng một instance.
+- **Dev:** Turbo dùng `dependsOn: ["^build"]` để build dependency trước khi chạy
+  app. `pnpm dev` đồng thời khởi chạy script dev của các workspace; shared dùng
+  `tsup --watch`. API dùng nodemon theo dõi `src` và `shared/dist` để restart.
+  Chạy app riêng không tự khởi chạy shared watcher; cần build/watch shared riêng.
 
-## Phương án đã loại
+## Phương án đã cân nhắc
 
-- **Trỏ thẳng vào source (`./src/index.ts`) kết hợp `transpilePackages`**:
-  - _Lý do loại_: Dù Next.js hỗ trợ `transpilePackages`, NestJS CLI (`nest build` / `nest start`) không tự động transpile các file TypeScript nằm ngoài thư mục `sourceRoot` (`src/`) nếu không cấu hình tsconfig project references hoặc build hook phức tạp. Phương án này dễ gây gãy build ở API và làm chậm thời gian khởi động của Next.js.
+- **Export TypeScript source + transpilePackages:** Next.js có thể transpile,
+  nhưng pipeline API hiện chỉ build ứng dụng; cần thêm cấu hình biên dịch source
+  ngoài app. Chọn package đã build để thống nhất contract giữa các consumer.
+- **ESM-only:** Hợp với runtime API/web hiện tại và giảm số đầu ra; chưa đổi vì
+  muốn giữ nhánh tương thích CJS đã chọn ở US-0.1c.
+- **CJS-only:** Dùng được với nhiều công cụ Node nhưng thiếu đầu ra ESM trực tiếp
+  cho bundler; giữ dual build với chi phí cấu hình hiện còn nhỏ.
 
-## Hệ quả & Giải pháp kỹ thuật đi kèm
+## Khi nào xem xét lại
 
-- **Quá trình phát triển (Dev Workflow)**:
-  - Khi code trong `shared`, cần tiến trình `tsup --watch` để biên dịch tức thì ra `dist/`.
-  - Đã cấu hình Turborepo (`turbo.json` với `"dependsOn": ["^build"]`) để khi chạy `pnpm dev`, Turborepo tự động chạy song song watch cho `shared`, `api`, và `web`.
-- **NestJS Auto-restart**:
-  - Mặc định `nest start --watch` chỉ watch thư mục `apps/api/src/`. Vì vậy, `apps/api` sử dụng `nodemon` cấu hình watch cả `src/` và `../../packages/shared/dist/` để tự động restart khi `shared` thay đổi.
+Cân nhắc ESM-only khi xác nhận toàn bộ consumer/tooling không cần CJS; xem lại
+chiến lược build khi thời gian rebuild hoặc lỗi nạp hai đầu ra gây trở ngại thực tế.
 
-## Ràng buộc
-
-- `@hiveshelf/shared` là **Framework-agnostic**: chỉ chứa type, enum, Zod schema, validation rules và hằng số thuần túy; tuyệt đối không phụ thuộc vào NestJS, React, Next.js, DOM hoặc database client (Prisma).
-- **Đồng bộ phiên bản Zod**: Toàn bộ workspace (`shared`, `api`, `web`) phải dùng chung một major version của Zod (hiện tại là `^4.6.7`) để tránh xung đột type inference và lỗi `instanceof` lúc runtime.
+Bằng chứng: [exports](../../packages/shared/package.json),
+[tsup](../../packages/shared/tsup.config.ts), [Turbo](../../turbo.json),
+[nodemon](../../apps/api/nodemon.json), [API runtime](../../apps/api/package.json).
