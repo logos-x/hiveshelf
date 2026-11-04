@@ -15,7 +15,10 @@
       "dependsOn": ["^build"]
     },
     "lint": {},
-    "test": {},
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "@hiveshelf/api#db:generate": {
       "cache": false
     },
@@ -32,7 +35,10 @@
       "persistent": true
     },
     "@hiveshelf/api#test": {
-      "dependsOn": ["^build", "db:generate"]
+      "dependsOn": ["^build", "db:generate"],
+      "cache": false,
+      "outputs": [],
+      "passThroughEnv": ["DATABASE_URL", "DATABASE_URL_TEST", "NODE_ENV"]
     }
   }
 }
