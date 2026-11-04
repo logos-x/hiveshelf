@@ -18,3 +18,5 @@ process.env.PORT = '3001';
 process.env.WEB_ORIGIN = 'http://localhost:3000';
 process.env.DATABASE_URL = databaseUrl;
 process.env.DATABASE_URL_TEST = databaseUrl;
+process.env.STORAGE_DRIVER = 'memory';
+process.env.EMAIL_DRIVER = 'memory';
