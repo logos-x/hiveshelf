@@ -20,10 +20,10 @@ describe('test database isolation', () => {
   it('rejects the same database despite different credentials and host alias', () => {
     expect(() =>
       assertTestDatabase(
-        'posgresql://dev:password@localhost:5432/hiveshelf_test',
+        'postgresql://dev:password@localhost:5432/hiveshelf_test',
         'postgresql://test:other@127.0.0.1:5432/hiveshelf_test?schema=public',
       ),
-    ).toThrow();
+    ).toThrow('Test database must differ from development database.');
   });
 
   it.each([

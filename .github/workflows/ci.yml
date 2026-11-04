@@ -52,11 +52,6 @@ jobs:
       - name: Run checks
         run: pnpm turbo run lint typecheck build --cache-dir=.turbo
 
-      - name: Run API unit tests
-        run: pnpm --filter @hiveshelf/api test
-        env:
-          NODE_ENV: test
-
       - name: Start integration infrastructure
         run: |
           docker compose up -d --wait minio mailpit
@@ -81,17 +76,24 @@ jobs:
           MAIL_FROM: "HiveShelf <no-reply@hiveshelf.local>"
           MAILPIT_UI_PORT: "8025"
 
-      - name: Run API E2E tests
-        run: pnpm --filter @hiveshelf/api test:e2e
-        env:
-          NODE_ENV: test
-
       - name: Smoke with memory drivers
         run: pnpm dev:smoke
         env:
           NODE_ENV: test
           STORAGE_DRIVER: memory
           EMAIL_DRIVER: memory
+
+  test:
+    name: test
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NODE_ENV: test
+      STORAGE_DRIVER: memory
+      EMAIL_DRIVER: memory
+
     services:
       postgres:
         image: postgres:17-alpine
@@ -106,3 +108,19 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run workspace tests
+        run: pnpm test
