@@ -54,6 +54,9 @@ importers:
       "@aws-sdk/s3-request-presigner":
         specifier: ^3.1161.0
         version: 3.1161.0
+      "@fgv/ts-bcp47":
+        specifier: ^5.0.2
+        version: 5.0.2(@fgv/ts-extras@5.0.2(@fgv/ts-utils@5.0.2))(@fgv/ts-json-base@5.0.2(@fgv/ts-utils@5.0.2))(@fgv/ts-utils@5.0.2)
       "@hiveshelf/shared":
         specifier: workspace:*
         version: link:../../packages/shared
@@ -85,8 +88,8 @@ importers:
         specifier: ^5.3.1
         version: 5.3.1(@nestjs/common@12.2.0(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@5.5.0))(@nestjs/core@12.2.0)(pino-http@11.0.0)(pino@10.4.0)(rxjs@7.8.2)
       nodemailer:
-        specifier: ^10.3.1
-        version: 10.3.1
+        specifier: ^10.6.0
+        version: 10.6.0
       pg:
         specifier: 8.23.1
         version: 8.23.1
@@ -1387,6 +1390,38 @@ packages:
     peerDependenciesMeta:
       "@noble/hashes":
         optional: true
+
+  "@fgv/ts-bcp47@5.0.2":
+    resolution:
+      {
+        integrity: sha512-+e8Hn1qyNBZh8UBQ4nKv0HFZOZp9Q5hSTzXw1Dar4ipYY/5KIh0KFto4HwiTH7iar9tp7ZP0PeQ27vUmvdqniA==,
+      }
+    peerDependencies:
+      "@fgv/ts-extras": 5.0.2
+      "@fgv/ts-json-base": 5.0.2
+      "@fgv/ts-utils": 5.0.2
+
+  "@fgv/ts-extras@5.0.2":
+    resolution:
+      {
+        integrity: sha512-tOqkFINBlmpHDcZ1eGjw/js4J7lXOQsIDV0tfdfnBPDPS8YchhEGvY+QkJeocQii3nV1IAIoMgwtUjBdICh4PA==,
+      }
+    peerDependencies:
+      "@fgv/ts-utils": 5.0.2
+
+  "@fgv/ts-json-base@5.0.2":
+    resolution:
+      {
+        integrity: sha512-cGcMB6ZVY07Fvz8YGOJxzr8uLC+zYnzl7gBONmJYog3T5tilmAWO5qrBBBCLu9SljIEfKWSyoOSrrIJlvfY5Mw==,
+      }
+    peerDependencies:
+      "@fgv/ts-utils": 5.0.2
+
+  "@fgv/ts-utils@5.0.2":
+    resolution:
+      {
+        integrity: sha512-iQi6comYhgTo+wDa4yubroaqQw86MX69XMIaBG6MKrJyGH2czCRgpbMPknDQy4t/IC0NIcpYER7/7+rQjhayAQ==,
+      }
 
   "@floating-ui/core@1.8.0":
     resolution:
@@ -5908,6 +5943,12 @@ packages:
       picomatch:
         optional: true
 
+  fflate@0.8.3:
+    resolution:
+      {
+        integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==,
+      }
+
   figures@3.2.0:
     resolution:
       {
@@ -7392,6 +7433,13 @@ packages:
       }
     engines: { bun: ">=1.0.0", deno: ">=1.30.0", node: ">=8.0.0" }
 
+  luxon@3.7.2:
+    resolution:
+      {
+        integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==,
+      }
+    engines: { node: ">=12" }
+
   lz-string@1.5.0:
     resolution:
       {
@@ -7587,6 +7635,13 @@ packages:
       }
     engines: { node: ">= 10.16.0" }
 
+  mustache@4.2.0:
+    resolution:
+      {
+        integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==,
+      }
+    hasBin: true
+
   mute-stream@0.0.8:
     resolution:
       {
@@ -7731,10 +7786,10 @@ packages:
       }
     engines: { node: ">=18" }
 
-  nodemailer@10.3.1:
+  nodemailer@10.6.0:
     resolution:
       {
-        integrity: sha512-uF0AFsJC07Y1vdW7p580DKAnh7rAO+4UPSSB3mDCPNDufoiaOebV6JmrzpxB14OjEEEiBsNdYoM2Y+fN8M7BBA==,
+        integrity: sha512-jWanL7D9GD3jvUDYKmoC5rWTiG8MnBgnN2yV68bgMKip1zUJhiSTyz7Eg+18y8sk5OvdVDzws5nZK5arSI4f5Q==,
       }
     engines: { node: ">=20.0.0" }
 
@@ -7997,6 +8052,12 @@ packages:
         integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==,
       }
     engines: { node: ">=6" }
+
+  papaparse@5.7.0:
+    resolution:
+      {
+        integrity: sha512-qBGxg/7Q3Kl9Wfhrz2Z74UnvnHTXLNG6jmKJFeBvP2+y4lV7So+7SR62+Zd47JvdrCkX+nDcnr0ObPzek/+6RA==,
+      }
 
   parent-module@1.0.1:
     resolution:
@@ -9355,6 +9416,7 @@ packages:
       {
         integrity: sha512-C630TWXZCZmLq0F2bW4QqwnaaxCQ/svpAqvJwnC4JvgEM5ohhBnGsEzTLSOXcN+xjz+kEaHS5uoWIw2klnqd0A==,
       }
+    deprecated: Partial release, see https://github.com/remusao/tldts/issues/2735. Use >=7.4.22.
 
   tldts@7.4.19:
     resolution:
@@ -10884,6 +10946,29 @@ snapshots:
     optionalDependencies:
       "@noble/hashes": 1.8.0
 
+  "@fgv/ts-bcp47@5.0.2(@fgv/ts-extras@5.0.2(@fgv/ts-utils@5.0.2))(@fgv/ts-json-base@5.0.2(@fgv/ts-utils@5.0.2))(@fgv/ts-utils@5.0.2)":
+    dependencies:
+      "@fgv/ts-extras": 5.0.2(@fgv/ts-utils@5.0.2)
+      "@fgv/ts-json-base": 5.0.2(@fgv/ts-utils@5.0.2)
+      "@fgv/ts-utils": 5.0.2
+      luxon: 3.7.2
+
+  "@fgv/ts-extras@5.0.2(@fgv/ts-utils@5.0.2)":
+    dependencies:
+      "@fgv/ts-json-base": 5.0.2(@fgv/ts-utils@5.0.2)
+      "@fgv/ts-utils": 5.0.2
+      fflate: 0.8.3
+      luxon: 3.7.2
+      mustache: 4.2.0
+      papaparse: 5.7.0
+
+  "@fgv/ts-json-base@5.0.2(@fgv/ts-utils@5.0.2)":
+    dependencies:
+      "@fgv/ts-utils": 5.0.2
+      luxon: 3.7.2
+
+  "@fgv/ts-utils@5.0.2": {}
+
   "@floating-ui/core@1.8.0":
     dependencies:
       "@floating-ui/utils": 0.2.12
@@ -12340,7 +12425,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.12(@types/node@20.19.43)(@vitest/coverage-v8@4.1.12)(jsdom@30.1.3(@noble/hashes@1.8.0))(vite@8.3.5(@types/node@20.19.43)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+      vitest: 4.1.12(@types/node@24.19.2)(@vitest/coverage-v8@4.1.12)(jsdom@30.1.3(@noble/hashes@1.8.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
   "@vitest/expect@4.1.12":
     dependencies:
@@ -13714,6 +13799,8 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.7
 
+  fflate@0.8.3: {}
+
   figures@3.2.0:
     dependencies:
       escape-string-regexp: 1.0.5
@@ -14502,6 +14589,8 @@ snapshots:
 
   lru.min@1.1.5: {}
 
+  luxon@3.7.2: {}
+
   lz-string@1.5.0: {}
 
   magic-string@0.30.21:
@@ -14589,6 +14678,8 @@ snapshots:
       append-field: 1.0.0
       busboy: 1.6.0
       type-is: 1.6.18
+
+  mustache@4.2.0: {}
 
   mute-stream@0.0.8: {}
 
@@ -14688,7 +14779,7 @@ snapshots:
 
   node-releases@2.0.60: {}
 
-  nodemailer@10.3.1: {}
+  nodemailer@10.6.0: {}
 
   nodemon@3.1.14:
     dependencies:
@@ -14899,6 +14990,8 @@ snapshots:
       p-limit: 3.1.0
 
   p-try@2.2.0: {}
+
+  papaparse@5.7.0: {}
 
   parent-module@1.0.1:
     dependencies:

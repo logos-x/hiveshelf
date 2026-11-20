@@ -19,3 +19,227 @@ model SystemInfo {
 
   @@map("system_info")
 }
+
+// =====================================================================================================================
+// ENUMS
+// =====================================================================================================================
+enum WorkAccessStatus {
+  AVAILABLE
+  BLOCKED
+}
+
+enum EditionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EditionSourceType {
+  ADMIN_ENTRY
+  PUBLIC_DOMAIN_IMPORT
+}
+
+enum RightsBasis {
+  PUBLIC_DOMAIN
+  PERMISSION
+}
+
+enum MediaAssetKind {
+  COVER
+}
+
+enum MediaAssetStatus {
+  PENDING
+  READY
+  REJECTED
+}
+
+// =====================================================================================================================
+// CATALOG SCHEMA
+// =====================================================================================================================
+
+model Work {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug          String           @unique
+  originalTitle String           @map("original_title")
+  accessStatus  WorkAccessStatus @default(AVAILABLE) @map("access_status")
+  blockedAt     DateTime?        @map("blocked_at") @db.Timestamptz(3)
+  blockReason   String?          @map("block_reason")
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workGenres WorkGenre[]
+  workTags   WorkTag[]
+
+  edition Edition?
+
+  @@map("works")
+}
+
+model Genre {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug       String      @unique
+  name       String
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workGenres WorkGenre[]
+
+  @@map("genres")
+}
+
+model WorkGenre {
+  workId    String   @map("work_id") @db.Uuid
+  genreId   String   @map("genre_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  work  Work  @relation(fields: [workId], references: [id], onDelete: Cascade)
+  genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([workId, genreId])
+  @@index([genreId, workId])
+  @@map("work_genres")
+}
+
+model Tag {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String    @unique
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workTags  WorkTag[]
+
+  @@map("tags")
+}
+
+model WorkTag {
+  workId    String   @map("work_id") @db.Uuid
+  tagId     String   @map("tag_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([workId, tagId])
+  @@index([tagId, workId])
+  @@map("work_tags")
+}
+
+model MediaAsset {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  objectKey      String           @unique @map("object_key")
+  kind           MediaAssetKind
+  mimeType       String           @map("mime_type")
+  byteSize       BigInt           @map("byte_size")
+  checksumSha256 String           @map("checksum_sha256")
+  status         MediaAssetStatus @default(PENDING)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  coverEditions  Edition[]        @relation("EditionCover")
+
+  @@map("media_assets")
+}
+
+model Edition {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workId          String        @unique @map("work_id") @db.Uuid
+  sourceEditionId String?       @map("source_edition_id") @db.Uuid
+  languageTag     String        @map("language_tag")
+  slug            String        @unique
+  title           String
+  description     String?
+  coverAssetId    String?       @map("cover_asset_id") @db.Uuid
+  status          EditionStatus @default(DRAFT)
+  publishedAt     DateTime?     @map("published_at") @db.Timestamptz(3)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  coverAsset MediaAsset? @relation("EditionCover", fields: [coverAssetId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  sourceEdition Edition? @relation("EditionTranslationSource", fields: [sourceEditionId, workId], references: [id, workId], onDelete: NoAction, onUpdate: NoAction)
+
+  derivedEditions Edition[] @relation("EditionTranslationSource")
+
+  sources EditionSource[]
+
+  chapters Chapter[]
+
+  chapterVersions ChapterVersion[]
+
+  @@unique([id, workId])
+  @@index([coverAssetId])
+  @@index([sourceEditionId, workId])
+  @@index([status, publishedAt])
+  @@map("editions")
+}
+
+model EditionSource {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  editionId       String            @map("edition_id") @db.Uuid
+  sourceType      EditionSourceType @map("source_type")
+  citation        String
+  sourceUrl       String?           @map("source_url")
+  rightsBasis     RightsBasis       @map("rights_basis")
+  rightsStatement String            @map("rights_statement")
+  retrievedAt     DateTime?         @map("retrieved_at") @db.Timestamptz(3)
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  edition Edition @relation(fields: [editionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  chapterVersions ChapterVersion[]
+
+  @@unique([id, editionId])
+  @@index([editionId])
+  @@map("edition_sources")
+}
+
+model Chapter {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  editionId String   @map("edition_id") @db.Uuid
+  slug      String
+  position  Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  edition Edition @relation(fields: [editionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  publishedVersionId String? @map("published_version_id") @db.Uuid
+
+  versions ChapterVersion[] @relation("ChapterVersions")
+
+  publishedVersion ChapterVersion? @relation("ChapterPublishedVersion", fields: [publishedVersionId, id], references: [id, chapterId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([editionId, slug])
+  @@unique([editionId, position])
+  @@unique([id, editionId])
+  @@unique([publishedVersionId, id])
+  @@map("chapters")
+}
+
+model ChapterVersion {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chapterId            String   @map("chapter_id") @db.Uuid
+  editionId            String   @map("edition_id") @db.Uuid
+  versionNumber        Int      @map("version_number")
+  title                String
+  contentHtml          String   @map("content_html")
+  contentFormatVersion Int      @default(1) @map("content_format_version")
+  editionSourceId      String   @map("edition_source_id") @db.Uuid
+  contentHash          String   @map("content_hash")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  chapter Chapter @relation("ChapterVersions", fields: [chapterId, editionId], references: [id, editionId], onDelete: Restrict, onUpdate: NoAction)
+
+  edition Edition @relation(fields: [editionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  editionSource EditionSource @relation(fields: [editionSourceId, editionId], references: [id, editionId], onDelete: Restrict, onUpdate: NoAction)
+
+  publishedFor Chapter? @relation("ChapterPublishedVersion")
+
+  @@unique([chapterId, versionNumber])
+  @@unique([id, chapterId])
+  @@index([editionId])
+  @@index([editionSourceId, editionId])
+  @@map("chapter_versions")
+}

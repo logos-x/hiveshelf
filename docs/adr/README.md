@@ -14,6 +14,7 @@ hành và thiết kế chi tiết được dẫn link thay vì chép vào ADR.
 | [003](003-shared-package-bundling.md)      | Cách đóng gói `@hiveshelf/shared`                | Accepted   |
 | [004](004-s3-compatible-object-storage.md) | S3-compatible Object Storage                     | Accepted   |
 | [005](005-prisma-migration-workflow.md)    | Prisma và quy trình thay đổi database schema     | Proposed   |
+| [006](006-work-edition-model.md)           | Mô hình Work/Edition và phiên bản chương         | Proposed   |
 
 ADR-004/005 là tài liệu có sẵn; giữ nguyên ID và trạng thái. ADR-004 còn dài hơn
 mục tiêu một trang, việc rút gọn được để riêng để giữ phạm vi cập nhật ADR-001..003.
@@ -50,15 +51,15 @@ và ghi rõ kết quả review nếu tạm hoãn.
 ## ADR dự kiến cho Phase 1
 
 Story ban đầu dự kiến số 004–007, nhưng 004/005 đã được dùng cho storage và
-migration. Ánh xạ sang 006–009 để bảo toàn lịch sử; đây là backlog câu hỏi,
-chưa phải bốn ADR đã Accepted.
+migration. Ánh xạ sang 006–009 để bảo toàn lịch sử; ADR-006 đã có bản Proposed,
+các mục còn lại là backlog câu hỏi, chưa phải ADR đã Accepted.
 
-| ID dự kiến (ID trong story) | Chủ đề                              | Câu hỏi cần trả lời                                                                                                                                    |
-| --------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 006 (004)                   | Mô hình Work/Edition                | Vì sao tách tác phẩm và ấn bản khi P1 tối đa một Edition/Work? Metadata, trạng thái thuộc đâu; khi nào nới unique workId để hỗ trợ bản dịch?           |
-| 007 (005)                   | Nội dung chương là HTML đã sanitize | Vì sao HTML thay vì Markdown/JSON editor? Sanitize ở đâu, allowlist nào; version policy, anchor và nội dung cũ được xử lý thế nào khi đổi policy?      |
-| 008 (006)                   | Cookie httpOnly giữa Next và Nest   | Topology domain và luồng browser/SSR ra sao? Cấu hình cookie, CORS, CSRF; refresh rotation, logout và thu hồi phiên phối hợp thế nào?                  |
-| 009 (007)                   | Adapter dịch vụ ngoài               | Contract, lỗi, retry/idempotency và kiểm thử adapter quy định thế nào? Kế thừa storage/email hiện có ra sao; khi nào cần adapter thanh toán/quảng cáo? |
+| ID dự kiến (ID trong story)            | Chủ đề                              | Câu hỏi cần trả lời                                                                                                                                    |
+| -------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [006 (004)](006-work-edition-model.md) | Mô hình Work/Edition (Proposed)     | Đã ghi mô hình P1, snapshot chương/nguồn, ngoại lệ hoãn trường User và hướng nới unique workId ở P5; xem ADR để review.                                |
+| 007 (005)                              | Nội dung chương là HTML đã sanitize | Vì sao HTML thay vì Markdown/JSON editor? Sanitize ở đâu, allowlist nào; version policy, anchor và nội dung cũ được xử lý thế nào khi đổi policy?      |
+| 008 (006)                              | Cookie httpOnly giữa Next và Nest   | Topology domain và luồng browser/SSR ra sao? Cấu hình cookie, CORS, CSRF; refresh rotation, logout và thu hồi phiên phối hợp thế nào?                  |
+| 009 (007)                              | Adapter dịch vụ ngoài               | Contract, lỗi, retry/idempotency và kiểm thử adapter quy định thế nào? Kế thừa storage/email hiện có ra sao; khi nào cần adapter thanh toán/quảng cáo? |
 
 Đối chiếu [ERD P1 đang để review](../erd.md) khi viết 006–008; Work/Edition và
 auth chưa có trong Prisma schema hiện tại. ADR-009 bổ sung nguyên tắc adapter,
