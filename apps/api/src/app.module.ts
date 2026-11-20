@@ -11,6 +11,7 @@ import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
 import { PrismaModule } from './prisma/prisma.module.ts';
 import { StorageModule } from './storage/storage.module.ts';
 import { EmailModule } from './email/email.module.ts';
+import { CatalogModule } from './catalog/catalog.module.ts';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { EmailModule } from './email/email.module.ts';
           level: config.get('LOG_LEVEL', { infer: true }),
         }),
     }),
+    CatalogModule,
   ],
   controllers: [AppController, HealthController],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
