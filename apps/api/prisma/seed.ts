@@ -2,7 +2,8 @@ import '../scripts/load-env.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 import { normalizeLanguageTag } from '../src/common/utils/language-tag.ts';
-import { createHash } from 'node:crypto';
+import { createChapterVersion } from '../src/common/content/chapter-version.writer.ts';
+
 import {
   sampleCover,
   sampleCoverChecksum,
@@ -33,19 +34,19 @@ const books = [
         position: 1,
         slug: 'anh-den',
         title: 'Ánh đèn',
-        html: '<p id="p-1">Chiều xuống, An thắp ngọn đèn bên cửa sổ.</p>',
+        html: '<p>Chiều xuống, An thắp ngọn đèn bên cửa sổ.</p>',
       },
       {
         position: 2,
         slug: 'nguoi-khach',
         title: 'Người khách',
-        html: '<p id="p-1">Một người khách dừng chân trước ngôi nhà nhỏ.</p>',
+        html: '<p>Một người khách dừng chân trước ngôi nhà nhỏ.</p>',
       },
       {
         position: 3,
         slug: 'binh-minh',
         title: 'Bình minh',
-        html: '<p id="p-1">Sáng hôm sau, An mở cửa đón những tia nắng đầu ngày.</p>',
+        html: '<p>Sáng hôm sau, An mở cửa đón những tia nắng đầu ngày.</p>',
       },
     ],
     coverId: 'a6fba639-7976-4837-b23c-b62716502375',
@@ -63,19 +64,19 @@ const books = [
         position: 1,
         slug: 'the-seed',
         title: 'The Seed',
-        html: '<p id="p-1">Mia planted a seed beside the kitchen window.</p>',
+        html: '<p>Mia planted a seed beside the kitchen window.</p>',
       },
       {
         position: 2,
         slug: 'the-rain',
         title: 'The Rain',
-        html: '<p id="p-1">Rain arrived overnight and softened the garden soil.</p>',
+        html: '<p>Rain arrived overnight and softened the garden soil.</p>',
       },
       {
         position: 3,
         slug: 'the-first-leaf',
         title: 'The First Leaf',
-        html: '<p id="p-1">A small green leaf appeared in the morning light.</p>',
+        html: '<p>A small green leaf appeared in the morning light.</p>',
       },
     ],
     coverId: 'fd24602a-f76a-4692-8e52-5f9afcfc63b7',
@@ -222,29 +223,25 @@ async function main(): Promise<void> {
             },
           });
 
-          const contentHash = createHash('sha256')
-            .update(chapterData.html, 'utf8')
-            .digest('hex');
-
-          const version = await tx.chapterVersion.upsert({
+          const existingVersion = await tx.chapterVersion.findUnique({
             where: {
               chapterId_versionNumber: {
                 chapterId: chapter.id,
                 versionNumber: 1,
               },
             },
-            update: {},
-            create: {
+          });
+
+          const version =
+            existingVersion ??
+            (await createChapterVersion(tx, {
               chapterId: chapter.id,
               editionId: edition.id,
               versionNumber: 1,
               title: chapterData.title,
-              contentHtml: chapterData.html,
-              contentFormatVersion: 1,
+              html: chapterData.html,
               editionSourceId: book.sourceId,
-              contentHash,
-            },
-          });
+            }));
 
           if (edition.status === 'DRAFT' && edition.publishedAt === null) {
             await tx.chapter.updateMany({
