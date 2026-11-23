@@ -33,7 +33,9 @@
     "db:seed": "prisma db seed",
     "db:reset": "tsx scripts/db-reset.ts",
     "db:studio": "prisma studio",
-    "db:seed:covers": "tsx scripts/seed-covers.ts"
+    "db:seed:covers": "tsx scripts/seed-covers.ts",
+    "content:audit": "tsx scripts/audit-chapter-content.ts",
+    "content:migrate": "tsx scripts/migrate-chapter-content.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",
@@ -56,6 +58,7 @@
     "pino-http": "^11.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "sanitize-html": "2.18.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -68,6 +71,7 @@
     "@types/node": "^24.0.0",
     "@types/nodemailer": "^8.0.2",
     "@types/pg": "8.23.1",
+    "@types/sanitize-html": "2.16.2",
     "@types/supertest": "^7.0.0",
     "@vitest/coverage-v8": "^4.1.2",
     "eslint": "9.39.5",

@@ -12,6 +12,11 @@ import {
 } from '@hiveshelf/shared';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { createHash, randomUUID } from 'node:crypto';
+import {
+  CHAPTER_CONTENT_FORMAT_VERSION,
+  createChapterVersion,
+} from '../common/content/chapter-version.writer.ts';
+import { sanitizeChapterHtml } from '../common/content/sanitize-chapter-html.ts';
 
 describe('API books (e2e)', () => {
   let app: INestApplication | undefined;
@@ -173,21 +178,35 @@ describe('API books (e2e)', () => {
     });
 
     try {
-      const draftHtml = '<p id="p-1">This is a newer draft.</p>';
-      const draft = await prisma.chapterVersion.create({
-        data: {
-          chapterId: chapter.id,
-          editionId: edition.id,
-          editionSourceId: publishedVersion.editionSourceId,
-          versionNumber: publishedVersion.versionNumber + 1,
-          title: 'A newer draft title',
-          contentHtml: draftHtml,
-          contentHash: createHash('sha256').update(draftHtml).digest('hex'),
-        },
-        select: { id: true },
+      const draftHtml =
+        '<p onclick="alert(1)">This is a newer draft.</p>' +
+        '<script>alert(1)</script>';
+
+      const draft = await createChapterVersion(prisma, {
+        chapterId: chapter.id,
+        editionId: edition.id,
+        editionSourceId: publishedVersion.editionSourceId,
+        versionNumber: publishedVersion.versionNumber + 1,
+        title: 'A newer draft title',
+        html: draftHtml,
       });
 
       draftId = draft.id;
+      const storedDraft = await prisma.chapterVersion.findUniqueOrThrow({
+        where: { id: draft.id },
+      });
+
+      const expectedDraftHtml = '<p id="p-1">This is a newer draft.</p>';
+
+      expect(storedDraft.contentHtml).toBe(expectedDraftHtml);
+
+      expect(storedDraft.contentFormatVersion).toBe(
+        CHAPTER_CONTENT_FORMAT_VERSION,
+      );
+
+      expect(storedDraft.contentHash).toBe(
+        createHash('sha256').update(expectedDraftHtml, 'utf8').digest('hex'),
+      );
 
       const response = await request(app!.getHttpServer())
         .get(`/books/${slug}/chapters/1`)
@@ -212,6 +231,166 @@ describe('API books (e2e)', () => {
             status: edition.status,
             publishedAt: edition.publishedAt,
           },
+        });
+      }
+    }
+  });
+
+  it('stores sanitized chapter HTML and returns that exact published content', async () => {
+    const slug = 'the-small-garden';
+    const prisma = app!.get(PrismaService);
+
+    const edition = await prisma.edition.findFirstOrThrow({
+      where: { work: { slug } },
+      select: {
+        id: true,
+        status: true,
+        publishedAt: true,
+        chapters: {
+          where: { position: 1 },
+          select: {
+            id: true,
+            position: true,
+            publishedVersionId: true,
+            publishedVersion: {
+              select: {
+                id: true,
+                contentHtml: true,
+                contentHash: true,
+                editionSourceId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const chapter = edition.chapters[0];
+    const originalVersion = chapter?.publishedVersion;
+
+    if (!chapter || !originalVersion || !chapter.publishedVersionId) {
+      throw new Error('Seed must provide a published version for chapter 1');
+    }
+
+    const latestVersion = await prisma.chapterVersion.aggregate({
+      where: { chapterId: chapter.id },
+      _max: { versionNumber: true },
+    });
+
+    const inputHtml =
+      '<h2>Chương thử nghiệm</h2>' +
+      '<p id="attacker" onclick="alert(1)">Xin chào <strong>bạn</strong>.</p>' +
+      '<script>alert(document.cookie)</script>' +
+      '<svg onload="alert(1)"><circle /></svg>' +
+      '<img src="https://evil.example/tracking.png" alt="test">' +
+      '<iframe src="https://evil.example"></iframe>' +
+      '<style>body { background: red; }</style>' +
+      '<form action="https://evil.example"><input name="secret"></form>' +
+      '<p style="color:red">' +
+      '<a href="javascript:alert(1)">Liên kết nguy hiểm</a> ' +
+      '<a href="https://example.com/book" rel="opener" target="_blank">' +
+      'Nguồn hợp lệ</a></p>';
+
+    const expectedHtml =
+      '<h2>Chương thử nghiệm</h2>' +
+      '<p id="p-1">Xin chào <strong>bạn</strong>.</p>' +
+      '<p id="p-2">' +
+      '<a>Liên kết nguy hiểm</a> ' +
+      '<a href="https://example.com/book" ' +
+      'rel="noopener noreferrer nofollow">Nguồn hợp lệ</a></p>';
+
+    const expectedHash = createHash('sha256')
+      .update(expectedHtml, 'utf8')
+      .digest('hex');
+
+    let createdVersionId: string | undefined;
+
+    try {
+      const createdVersion = await prisma.$transaction(async (tx) => {
+        const version = await createChapterVersion(tx, {
+          chapterId: chapter.id,
+          editionId: edition.id,
+          versionNumber: (latestVersion._max.versionNumber ?? 0) + 1,
+          title: 'Sanitized published chapter',
+          html: inputHtml,
+          editionSourceId: originalVersion.editionSourceId,
+        });
+
+        await tx.chapter.update({
+          where: { id: chapter.id },
+          data: { publishedVersionId: version.id },
+        });
+
+        await tx.edition.update({
+          where: { id: edition.id },
+          data: {
+            status: 'PUBLISHED',
+            publishedAt: new Date(),
+          },
+        });
+
+        return version;
+      });
+
+      createdVersionId = createdVersion.id;
+
+      const storedVersion = await prisma.chapterVersion.findUniqueOrThrow({
+        where: { id: createdVersionId },
+      });
+
+      expect(storedVersion).toMatchObject({
+        contentHtml: expectedHtml,
+        contentHash: expectedHash,
+        contentFormatVersion: CHAPTER_CONTENT_FORMAT_VERSION,
+      });
+
+      const response = await request(app!.getHttpServer())
+        .get(`/books/${slug}/chapters/${chapter.position}`)
+        .expect(200);
+
+      const result = ChapterContentSchema.parse(response.body);
+
+      expect(result).toMatchObject({
+        editionId: edition.id,
+        chapterId: chapter.id,
+        chapterVersionId: createdVersionId,
+        order: chapter.position,
+        title: 'Sanitized published chapter',
+        contentFormatVersion: CHAPTER_CONTENT_FORMAT_VERSION,
+      });
+
+      expect(result.html).toBe(expectedHtml);
+      expect(result.html).toBe(storedVersion.contentHtml);
+
+      const unchangedOriginal = await prisma.chapterVersion.findUniqueOrThrow({
+        where: { id: originalVersion.id },
+      });
+
+      expect(unchangedOriginal.contentHtml).toBe(originalVersion.contentHtml);
+      expect(unchangedOriginal.contentHash).toBe(originalVersion.contentHash);
+    } finally {
+      if (createdVersionId !== undefined) {
+        const versionIdToDelete = createdVersionId;
+
+        await prisma.$transaction(async (tx) => {
+          await tx.chapter.update({
+            where: { id: chapter.id },
+            data: {
+              publishedVersionId: chapter.publishedVersionId,
+            },
+          });
+
+          await tx.edition.update({
+            where: { id: edition.id },
+            data: {
+              status: edition.status,
+              publishedAt: edition.publishedAt,
+            },
+          });
+
+          await tx.chapterVersion.delete({
+            where: { id: versionIdToDelete },
+          });
         });
       }
     }
@@ -755,6 +934,7 @@ describe('API books (e2e)', () => {
     const originalEditionSourceId = version.editionSourceId;
 
     try {
+      // eslint-disable-next-line hiveshelf/chapter-version-writes -- DB constraint test: intentionally assign a source from another edition.
       const updatedChapterVersion = prisma.chapterVersion.update({
         where: { id: version.id },
         data: {
@@ -766,6 +946,7 @@ describe('API books (e2e)', () => {
         /chapter_versions_edition_source_id_edition_id_fkey/,
       );
     } finally {
+      // eslint-disable-next-line hiveshelf/chapter-version-writes -- Restores the original source after the DB constraint test.
       await prisma.chapterVersion.update({
         where: { id: version.id },
         data: {
@@ -935,30 +1116,23 @@ describe('API books (e2e)', () => {
         chapterId: true,
         versionNumber: true,
         contentHtml: true,
-        contentHash: true,
       },
     });
 
     let createdVersionId: string | undefined;
 
     try {
-      const createVersion = prisma.chapterVersion
-        .create({
-          data: {
-            title: 'New Version',
-            chapterId: version.chapterId,
-            versionNumber: version.versionNumber,
-            editionId: version.editionId,
-            editionSourceId: version.editionSourceId,
-            contentHtml: version.contentHtml,
-            contentHash: version.contentHash,
-          },
-          select: { id: true },
-        })
-        .then((version) => {
-          createdVersionId = version.id;
-          return version;
-        });
+      const createVersion = createChapterVersion(prisma, {
+        title: 'New Version',
+        chapterId: version.chapterId,
+        versionNumber: version.versionNumber,
+        editionId: version.editionId,
+        editionSourceId: version.editionSourceId,
+        html: version.contentHtml,
+      }).then((createdVersion) => {
+        createdVersionId = createdVersion.id;
+        return createdVersion;
+      });
 
       await expect(createVersion).rejects.toMatchObject({ code: 'P2002' });
     } finally {
@@ -986,6 +1160,7 @@ describe('API books (e2e)', () => {
     const originalVersionNumber = version.versionNumber;
 
     try {
+      // eslint-disable-next-line hiveshelf/chapter-version-writes -- DB constraint test: intentionally assign an invalid version number.
       const editedVersion = prisma.chapterVersion.update({
         where: { id: version.id },
         data: {
@@ -997,6 +1172,7 @@ describe('API books (e2e)', () => {
         /chapter_versions_version_number_positive_check/,
       );
     } finally {
+      // eslint-disable-next-line hiveshelf/chapter-version-writes -- Restore the original number after the DB constraint test.
       await prisma.chapterVersion.update({
         where: { id: version.id },
         data: {
@@ -1099,6 +1275,9 @@ describe('API books (e2e)', () => {
                   select: {
                     id: true,
                     versionNumber: true,
+                    contentHtml: true,
+                    contentHash: true,
+                    contentFormatVersion: true,
                   },
                 },
               },
@@ -1154,6 +1333,18 @@ describe('API books (e2e)', () => {
 
         expect(version.versionNumber).toBe(1);
         expect(chapter.publishedVersionId).toBe(version.id);
+        expect(version.contentFormatVersion).toBe(
+          CHAPTER_CONTENT_FORMAT_VERSION,
+        );
+        expect(version.contentHtml).toBe(
+          sanitizeChapterHtml(version.contentHtml),
+        );
+        expect(version.contentHtml).toMatch(/^<p id="p-1">/);
+        expect(version.contentHash).toBe(
+          createHash('sha256')
+            .update(version.contentHtml, 'utf8')
+            .digest('hex'),
+        );
       }
     }
   });
