@@ -32,6 +32,6 @@
     "@hiveshelf/config": "workspace:*",
     "tsup": "^9.0.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.12"
+    "vitest": "^5.1.1"
   }
 }
