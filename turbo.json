@@ -29,6 +29,10 @@
     "@hiveshelf/api#typecheck": {
       "dependsOn": ["^build", "db:generate"]
     },
+    "@hiveshelf/web#typecheck": {
+      "dependsOn": ["^build"],
+      "env": ["NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_SITE_URL", "API_INTERNAL_URL"]
+    },
     "@hiveshelf/api#dev": {
       "dependsOn": ["^build", "db:generate"],
       "cache": false,

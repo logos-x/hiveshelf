@@ -1,6 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { randomBytes } from "node:crypto";
 import { clientEnv } from "@/env";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "@/i18n/routing";
+
+const handleI18nRouting = createMiddleware(routing);
 
 export function proxy(request: NextRequest) {
   const nonce = randomBytes(16).toString("base64");
@@ -42,16 +46,10 @@ export function proxy(request: NextRequest) {
 
   const csp = directives.join("; ");
 
-  const requestHeaders = new Headers(request.headers);
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("Content-Security-Policy", csp);
 
-  requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", csp);
-
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  const response = handleI18nRouting(request);
 
   response.headers.set("Content-Security-Policy", csp);
 
@@ -59,5 +57,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };

@@ -52,6 +52,9 @@ jobs:
       - name: Run checks
         run: pnpm turbo run lint typecheck build --cache-dir=.turbo
 
+      - name: Check translation keys
+        run: pnpm --filter @hiveshelf/web i18n:check
+
       - name: Start integration infrastructure
         run: |
           docker compose up -d --wait minio mailpit

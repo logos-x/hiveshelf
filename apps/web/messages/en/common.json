@@ -1,0 +1,23 @@
+{
+  "appName": "HiveShelf",
+  "metadata": {
+    "title": "HiveShelf",
+    "description": "Your space for reading"
+  },
+  "home": {
+    "apiStatus": "API status: <strong>{status}</strong>",
+    "apiUnavailable": "Could not connect to API"
+  },
+  "errors": {
+    "unexpectedTitle": "An unexpected error occurred",
+    "unexpectedDescription": "There was a problem displaying this page. Please try again."
+  },
+  "actions": {
+    "retry": "Try again"
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "vi": "Vietnamese",
+    "en": "English"
+  }
+}
