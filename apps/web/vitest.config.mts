@@ -7,6 +7,11 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
+    server: {
+      deps: {
+        inline: ["next-intl"],
+      },
+    },
     environment: "jsdom",
     globals: false,
     setupFiles: ["./test/setup.ts"],

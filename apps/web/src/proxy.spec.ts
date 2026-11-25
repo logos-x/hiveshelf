@@ -80,4 +80,137 @@ describe("CSP proxy", () => {
     expect(csp).not.toContain("attacker-controlled");
     expect(getScriptDirective(csp!)).not.toContain("unsafe-inline");
   });
+
+  it("forwards the generated nonce and CSP to the renderer", () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    const response = proxy(
+      new NextRequest("http://localhost:3000/vi", {
+        headers: {
+          "x-nonce": "attacker-controlled",
+          "Content-Security-Policy": "script-src 'unsafe-inline'",
+        },
+      }),
+    );
+
+    const forwardedNonce = response.headers.get("x-middleware-request-x-nonce");
+
+    const forwardedCsp = response.headers.get("x-middleware-request-content-security-policy");
+
+    const responseCsp = response.headers.get("Content-Security-Policy");
+
+    expect(response.status).toBe(200);
+    expect(forwardedNonce).toBeTruthy();
+    expect(forwardedNonce).not.toBe("attacker-controlled");
+
+    expect(forwardedCsp).not.toBeNull();
+    expect(forwardedCsp).toBe(responseCsp);
+    expect(forwardedCsp).toContain(`'nonce-${forwardedNonce}'`);
+    if (forwardedCsp === null) {
+      throw new Error("Missing forwarded CSP");
+    }
+
+    expect(getScriptDirective(forwardedCsp)).not.toContain("unsafe-inline");
+  });
+});
+
+describe("Locale routing", () => {
+  function makeRequest({
+    path = "/",
+    cookie,
+    acceptLanguage,
+  }: {
+    path?: string;
+    cookie?: string;
+    acceptLanguage?: string;
+  } = {}) {
+    const headers = new Headers();
+
+    if (cookie) {
+      headers.set("Cookie", cookie);
+    }
+
+    if (acceptLanguage) {
+      headers.set("Accept-Language", acceptLanguage);
+    }
+
+    return new NextRequest(`http://localhost:3000${path}`, {
+      headers,
+    });
+  }
+
+  it("mặc định chuyển đến tiếng Việt", () => {
+    const response = proxy(makeRequest());
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost:3000/vi");
+  });
+
+  it("chọn tiếng Anh từ Accept-Language", () => {
+    const response = proxy(
+      makeRequest({
+        acceptLanguage: "en-US,en;q=0.9",
+      }),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:3000/en");
+  });
+
+  it("ưu tiên cookie hơn Accept-Language", () => {
+    const response = proxy(
+      makeRequest({
+        cookie: "NEXT_LOCALE=vi",
+        acceptLanguage: "en-US,en;q=0.9",
+      }),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:3000/vi");
+  });
+
+  it("bỏ qua cookie có locale không được hỗ trợ", () => {
+    const response = proxy(
+      makeRequest({
+        cookie: "NEXT_LOCALE=fr",
+        acceptLanguage: "en-US,en;q=0.9",
+      }),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:3000/en");
+  });
+
+  it("dùng tiếng Việt khi Accept-Language không khớp", () => {
+    const response = proxy(
+      makeRequest({
+        acceptLanguage: "ja-JP,ja;q=0.9",
+      }),
+    );
+
+    expect(response.headers.get("location")).toBe("http://localhost:3000/vi");
+  });
+
+  it("giữ đường dẫn và query khi thêm locale", () => {
+    const response = proxy(
+      makeRequest({
+        path: "/catalog?page=2&sort=newest",
+        acceptLanguage: "en",
+      }),
+    );
+
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:3000/en/catalog?page=2&sort=newest",
+    );
+  });
+
+  it("ưu tiên locale trên URL hơn cookie và header", () => {
+    const response = proxy(
+      makeRequest({
+        path: "/vi",
+        cookie: "NEXT_LOCALE=en",
+        acceptLanguage: "en",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
 });

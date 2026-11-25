@@ -1,0 +1,23 @@
+{
+  "appName": "HiveShelf",
+  "metadata": {
+    "title": "HiveShelf",
+    "description": "Không gian đọc sách của bạn"
+  },
+  "home": {
+    "apiStatus": "Trạng thái API: <strong>{status}</strong>",
+    "apiUnavailable": "Không thể kết nối đến API"
+  },
+  "errors": {
+    "unexpectedTitle": "Đã xảy ra lỗi không mong muốn",
+    "unexpectedDescription": "Đã có sự cố khi hiển thị trang. Vui lòng thử lại."
+  },
+  "actions": {
+    "retry": "Thử lại"
+  },
+  "languageSwitcher": {
+    "label": "Ngôn ngữ",
+    "vi": "Tiếng Việt",
+    "en": "Tiếng Anh"
+  }
+}
