@@ -16,6 +16,7 @@ hành và thiết kế chi tiết được dẫn link thay vì chép vào ADR.
 | [005](005-prisma-migration-workflow.md)    | Prisma và quy trình thay đổi database schema     | Proposed   |
 | [006](006-work-edition-model.md)           | Mô hình Work/Edition và phiên bản chương         | Proposed   |
 | [007](007-sanitized-chapter-html.md)       | Nội dung chương là HTML đã sanitize              | Proposed   |
+| [008](008-auth-cookie-topology.md)         | Cookie xác thực cùng origin qua Next.js rewrite  | Proposed   |
 
 ADR-004/005 là tài liệu có sẵn; giữ nguyên ID và trạng thái. ADR-004 còn dài hơn
 mục tiêu một trang, việc rút gọn được để riêng để giữ phạm vi cập nhật ADR-001..003.
@@ -52,14 +53,14 @@ và ghi rõ kết quả review nếu tạm hoãn.
 ## ADR dự kiến cho Phase 1
 
 Story ban đầu dự kiến số 004–007, nhưng 004/005 đã được dùng cho storage và
-migration. Ánh xạ sang 006–009 để bảo toàn lịch sử; ADR-006 và ADR-007 đã có bản Proposed,
-các mục còn lại là backlog câu hỏi, chưa phải ADR đã Accepted.
+migration. Ánh xạ sang 006–009 để bảo toàn lịch sử; ADR-006, ADR-007 và ADR-008 đã có bản
+Proposed; ADR-009 còn là backlog câu hỏi, chưa phải ADR đã Accepted.
 
 | ID dự kiến (ID trong story)                | Chủ đề                                         | Câu hỏi cần trả lời                                                                                                                                    |
 | ------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [006 (004)](006-work-edition-model.md)     | Mô hình Work/Edition (Proposed)                | Đã ghi mô hình P1, snapshot chương/nguồn, ngoại lệ hoãn trường User và hướng nới unique workId ở P5; xem ADR để review.                                |
 | [007 (005)](007-sanitized-chapter-html.md) | Nội dung chương là HTML đã sanitize (Proposed) | Đã có bản Proposed về HTML sanitize, allowlist, pipeline ghi, anchors, format version, dữ liệu cũ và CSP; xem ADR để review.                           |
-| 008 (006)                                  | Cookie httpOnly giữa Next và Nest              | Topology domain và luồng browser/SSR ra sao? Cấu hình cookie, CORS, CSRF; refresh rotation, logout và thu hồi phiên phối hợp thế nào?                  |
+| [008 (006)](008-auth-cookie-topology.md)   | Cookie httpOnly giữa Next và Nest (Proposed)   | Đề xuất A qua rewrite; đã thử A/B local trên Chrome/Safari. Xem báo cáo spike, quy ước cookie/CSRF và việc chuyển sang DEPLOY-1/US-1.3a.               |
 | 009 (007)                                  | Adapter dịch vụ ngoài                          | Contract, lỗi, retry/idempotency và kiểm thử adapter quy định thế nào? Kế thừa storage/email hiện có ra sao; khi nào cần adapter thanh toán/quảng cáo? |
 
 Đối chiếu [ERD P1 đang để review](../erd.md) khi viết 006–008; Work/Edition và

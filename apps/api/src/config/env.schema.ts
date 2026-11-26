@@ -17,6 +17,11 @@ export const envSchema = z
         'DATABASE_URL must be use postgres:// or postgresql://',
       ),
     WEB_ORIGIN: z.string().default('http://localhost:3000'),
+    AUTH_SPIKE_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    AUTH_SPIKE_COOKIE_DOMAIN: z.literal('hiveshelf.test').optional(),
     STORAGE_DRIVER: z.enum(['memory', 's3']).default('memory'),
     S3_ENDPOINT: z.url().optional(),
     S3_REGION: z.string().min(1).default('us-east-1'),
@@ -34,6 +39,14 @@ export const envSchema = z
     MAIL_FROM: z.string().min(1).optional(),
   })
   .superRefine((env, ctx) => {
+    if (env.NODE_ENV === 'production' && env.AUTH_SPIKE_ENABLED) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['AUTH_SPIKE_ENABLED'],
+        message: 'Auth spike must not be enabled in production',
+      });
+    }
+
     if (env.STORAGE_DRIVER === 's3') {
       const requiredFields = [
         'S3_BUCKET',
