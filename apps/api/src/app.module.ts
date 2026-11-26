@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module.ts';
 import { StorageModule } from './storage/storage.module.ts';
 import { EmailModule } from './email/email.module.ts';
 import { CatalogModule } from './catalog/catalog.module.ts';
+import { AuthSpikeModule } from './auth-spike/auth-spike.module.ts';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CatalogModule } from './catalog/catalog.module.ts';
         }),
     }),
     CatalogModule,
+    AuthSpikeModule,
   ],
   controllers: [AppController, HealthController],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
