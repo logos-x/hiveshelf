@@ -1,1 +1,35 @@
-{}
+{
+  "bookDetail": {
+    "authors": "Authors",
+    "unknownAuthors": "Author information is unavailable",
+    "description": "About this book",
+    "noDescription": "This book has no description yet.",
+    "language": "Book language",
+    "sources": "Sources",
+    "noSources": "Source information is unavailable.",
+    "rights": "Usage rights note",
+    "noRightsStatement": "Usage rights information is unavailable.",
+    "sourceLink": "View source",
+    "tableOfContents": "Table of contents",
+    "chapterLink": "{order}. {title}",
+    "noChapters": "No chapters have been published yet.",
+    "coverPlaceholder": "Cover unavailable",
+    "loading": "Loading book information…",
+    "backToHome": "Back to home",
+    "backToBook": "Back to book details",
+    "notFound": {
+      "title": "Book not found",
+      "description": "This book does not exist or has not been published."
+    },
+    "error": {
+      "title": "Unable to load book information",
+      "description": "Please try again later.",
+      "retry": "Try again",
+      "retrying": "Trying again..."
+    },
+    "metadata": {
+      "title": "{title} | HiveShelf",
+      "fallbackDescription": "Explore information and the table of contents for {title} on HiveShelf."
+    }
+  }
+}

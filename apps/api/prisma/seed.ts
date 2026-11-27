@@ -25,6 +25,7 @@ const books = [
     sourceId: '3b560c41-7759-4b28-9c06-92fe9d758b30',
     workSlug: 'ngon-den-ben-cua-so',
     originalTitle: 'Ngọn đèn bên cửa sổ',
+    authorNames: ['Nhóm phát triển HiveShelf'],
     editionSlug: 'ngon-den-ben-cua-so-vi',
     languageTag: 'vi',
     title: 'Ngọn đèn bên cửa sổ',
@@ -55,6 +56,7 @@ const books = [
     sourceId: 'd4684b0c-2bdd-48b2-997c-c385069bb76f',
     workSlug: 'the-small-garden',
     originalTitle: 'The Small Garden',
+    authorNames: ['HiveShelf Development Team'],
     editionSlug: 'the-small-garden-en',
     languageTag: 'en',
     title: 'The Small Garden',
@@ -135,7 +137,9 @@ async function main(): Promise<void> {
       await prisma.$transaction(async (tx) => {
         const work = await tx.work.upsert({
           where: { slug: book.workSlug },
-          update: {},
+          update: {
+            authorNames: book.authorNames,
+          },
           create: {
             slug: book.workSlug,
             originalTitle: book.originalTitle,

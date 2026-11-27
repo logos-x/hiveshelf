@@ -41,7 +41,15 @@ const ChapterSummarySchema = z.object({
   title: z.string(),
 });
 
+const BookSourceSchema = z.object({
+  citation: z.string(),
+  sourceUrl: z.string().nullable(),
+  rightsStatement: z.string().nullable(),
+});
+
 export const BookDetailSchema = BookListItemSchema.extend({
+  authorNames: z.array(z.string()),
+  sources: z.array(BookSourceSchema),
   chapters: z.array(ChapterSummarySchema),
 });
 

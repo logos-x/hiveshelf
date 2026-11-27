@@ -26,6 +26,7 @@ const bookListSelect = {
     select: {
       id: true,
       slug: true,
+      authorNames: true,
       workGenres: {
         select: { genre: { select: { slug: true, name: true } } },
       },
@@ -106,7 +107,19 @@ export class CatalogService {
             id: true,
             slug: true,
             position: true,
-            publishedVersion: { select: { title: true } },
+            publishedVersion: {
+              select: {
+                title: true,
+                editionSource: {
+                  select: {
+                    id: true,
+                    citation: true,
+                    sourceUrl: true,
+                    rightsStatement: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -116,8 +129,24 @@ export class CatalogService {
       throw new NotFoundException('Book not found');
     }
 
+    const sourcesById = new Map<string, BookDetail['sources'][number]>();
+
+    for (const chapter of edition.chapters) {
+      const source = chapter.publishedVersion?.editionSource;
+
+      if (!source) continue;
+
+      sourcesById.set(source.id, {
+        citation: source.citation,
+        sourceUrl: source.sourceUrl,
+        rightsStatement: source.rightsStatement,
+      });
+    }
+
     return {
       ...toBookListItem(edition),
+      authorNames: edition.work.authorNames,
+      sources: [...sourcesById.values()],
       chapters: edition.chapters.flatMap((chapter) =>
         chapter.publishedVersion
           ? [

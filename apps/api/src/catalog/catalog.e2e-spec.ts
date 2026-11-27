@@ -1426,4 +1426,71 @@ describe('API books (e2e)', () => {
       );
     }
   });
+
+  it('returns authors and deduplicates the source shared by published chapters', async () => {
+    const prisma = app!.get(PrismaService);
+    const slug = 'ngon-den-ben-cua-so';
+
+    const work = await prisma.work.findUniqueOrThrow({
+      where: { slug },
+      select: {
+        authorNames: true,
+        edition: {
+          select: {
+            id: true,
+            status: true,
+            publishedAt: true,
+            sources: {
+              select: {
+                citation: true,
+                sourceUrl: true,
+                rightsStatement: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const edition = work.edition;
+
+    if (!edition) {
+      throw new Error('Missing seed edition');
+    }
+
+    expect(work.authorNames).toEqual(['Nhóm phát triển HiveShelf']);
+    expect(edition.sources).toHaveLength(1);
+
+    try {
+      await prisma.edition.update({
+        where: { id: edition.id },
+        data: {
+          status: 'PUBLISHED',
+          publishedAt: new Date(),
+        },
+      });
+
+      const response = await request(app!.getHttpServer())
+        .get(`/books/${slug}`)
+        .expect(200);
+
+      const book = BookDetailSchema.parse(response.body);
+
+      expect(book.authorNames).toEqual(work.authorNames);
+
+      expect(book.chapters).toHaveLength(3);
+      expect(book.chapters.map((chapter) => chapter.order)).toEqual([1, 2, 3]);
+
+      expect(book.sources).toHaveLength(1);
+      expect(book.sources).toEqual(edition.sources);
+    } finally {
+      await prisma.edition.update({
+        where: { id: edition.id },
+        data: {
+          status: edition.status,
+          publishedAt: edition.publishedAt,
+        },
+      });
+    }
+  });
 });

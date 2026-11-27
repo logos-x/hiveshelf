@@ -56,12 +56,12 @@ Story ban đầu dự kiến số 004–007, nhưng 004/005 đã được dùng 
 migration. Ánh xạ sang 006–009 để bảo toàn lịch sử; ADR-006, ADR-007 và ADR-008 đã có bản
 Proposed; ADR-009 còn là backlog câu hỏi, chưa phải ADR đã Accepted.
 
-| ID dự kiến (ID trong story)                | Chủ đề                                         | Câu hỏi cần trả lời                                                                                                                                    |
-| ------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [006 (004)](006-work-edition-model.md)     | Mô hình Work/Edition (Proposed)                | Đã ghi mô hình P1, snapshot chương/nguồn, ngoại lệ hoãn trường User và hướng nới unique workId ở P5; xem ADR để review.                                |
-| [007 (005)](007-sanitized-chapter-html.md) | Nội dung chương là HTML đã sanitize (Proposed) | Đã có bản Proposed về HTML sanitize, allowlist, pipeline ghi, anchors, format version, dữ liệu cũ và CSP; xem ADR để review.                           |
-| [008 (006)](008-auth-cookie-topology.md)   | Cookie httpOnly giữa Next và Nest (Proposed)   | Đề xuất A qua rewrite; đã thử A/B local trên Chrome/Safari. Xem báo cáo spike, quy ước cookie/CSRF và việc chuyển sang DEPLOY-1/US-1.3a.               |
-| 009 (007)                                  | Adapter dịch vụ ngoài                          | Contract, lỗi, retry/idempotency và kiểm thử adapter quy định thế nào? Kế thừa storage/email hiện có ra sao; khi nào cần adapter thanh toán/quảng cáo? |
+| ID dự kiến (ID trong story)                | Chủ đề                                         | Câu hỏi cần trả lời                                                                                                                                          |
+| ------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [006 (004)](006-work-edition-model.md)     | Mô hình Work/Edition (Proposed)                | Mỗi bản ngôn ngữ là sách độc lập, unique workId; tên tác giả, nguồn công khai và quyền sử dụng nullable; snapshot chương/nguồn và ngoại lệ hoãn trường User. |
+| [007 (005)](007-sanitized-chapter-html.md) | Nội dung chương là HTML đã sanitize (Proposed) | Đã có bản Proposed về HTML sanitize, allowlist, pipeline ghi, anchors, format version, dữ liệu cũ và CSP; xem ADR để review.                                 |
+| [008 (006)](008-auth-cookie-topology.md)   | Cookie httpOnly giữa Next và Nest (Proposed)   | Đề xuất A qua rewrite; đã thử A/B local trên Chrome/Safari. Xem báo cáo spike, quy ước cookie/CSRF và việc chuyển sang DEPLOY-1/US-1.3a.                     |
+| 009 (007)                                  | Adapter dịch vụ ngoài                          | Contract, lỗi, retry/idempotency và kiểm thử adapter quy định thế nào? Kế thừa storage/email hiện có ra sao; khi nào cần adapter thanh toán/quảng cáo?       |
 
 Đối chiếu [ERD P1 đang để review](../erd.md) khi viết 006–008; Work/Edition và
 auth chưa có trong Prisma schema hiện tại. ADR-009 bổ sung nguyên tắc adapter,

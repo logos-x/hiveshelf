@@ -1,1 +1,35 @@
-{}
+{
+  "bookDetail": {
+    "authors": "Tác giả",
+    "unknownAuthors": "Chưa có thông tin tác giả",
+    "description": "Giới thiệu",
+    "noDescription": "Sách chưa có mô tả.",
+    "language": "Ngôn ngữ sách",
+    "sources": "Nguồn",
+    "noSources": "Chưa có thông tin nguồn.",
+    "rights": "Ghi chú quyền sử dụng",
+    "noRightsStatement": "Chưa có thông tin quyền sử dụng.",
+    "sourceLink": "Xem nguồn",
+    "tableOfContents": "Mục lục",
+    "chapterLink": "{order}. {title}",
+    "noChapters": "Chưa có chương nào được xuất bản.",
+    "coverPlaceholder": "Chưa có ảnh bìa",
+    "loading": "Đang tải thông tin sách…",
+    "backToHome": "Về trang chủ",
+    "backToBook": "Về trang thông tin sách",
+    "notFound": {
+      "title": "Không tìm thấy sách",
+      "description": "Sách không tồn tại hoặc hiện chưa được xuất bản."
+    },
+    "error": {
+      "title": "Không thể tải thông tin sách",
+      "description": "Vui lòng thử lại sau.",
+      "retry": "Thử lại",
+      "retrying": "Đang thử lại..."
+    },
+    "metadata": {
+      "title": "{title} | HiveShelf",
+      "fallbackDescription": "Xem thông tin và mục lục của sách {title} trên HiveShelf."
+    }
+  }
+}
